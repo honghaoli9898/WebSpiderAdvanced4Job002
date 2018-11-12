@@ -1,0 +1,158 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.tl.job002</groupId>
+	<artifactId>WebSpiderAdvanced4Job002</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<!-- 配置maven多环境属性,方便灵活打包 -->
+	<profiles>
+		<profile>
+			<id>dev</id>
+			<properties>
+				<env>dev</env>
+				<ant-properties-path>src/main/resources/conf/dev/jdbc.properties</ant-properties-path>
+				<ant-properties-path-2>src/main/resources/conf/dev/spider.properties</ant-properties-path-2>
+				<ant-properties-path-3>src/main/resources/conf/dev/log4j.properties</ant-properties-path-3>
+			</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<profile>
+			<id>test</id>
+			<properties>
+				<env>test</env>
+				<ant-properties-path>src/main/resources/conf/test/jdbc.properties</ant-properties-path>
+				<ant-properties-path-2>src/main/resources/conf/test/spider.properties</ant-properties-path-2>
+				<ant-properties-path-3>src/main/resources/conf/test/spider.properties</ant-properties-path-3>
+			</properties>
+		</profile>
+		<profile>
+			<id>product</id>
+			<properties>
+				<env>product</env>
+				<ant-properties-path>src/main/resources/conf/product/jdbc.properties</ant-properties-path>
+				<ant-properties-path-2>src/main/resources/conf/product/spider.properties</ant-properties-path-2>
+				<ant-properties-path-3>src/main/resources/conf/product/spider.properties</ant-properties-path-3>
+			</properties>
+		</profile>
+	</profiles>
+
+	<!-- 仓库源 -->
+	<repositories>
+		<repository>
+			<id>nexus-aliyun</id>
+			<name>Nexus aliyun</name>
+			<url>http://maven.aliyun.com/nexus/content/groups/public</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<!--httpcline-4.5.2依赖 -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.2</version>
+		</dependency>
+
+		<!-- 引入 hadoop-cli-2.7.4 依赖 -->
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-client</artifactId>
+			<version>2.7.4</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-dbcp2</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<!-- 引入log4j 1.2.17依赖 -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+		<!-- 引入mysql-connection-java-5.1.44依赖 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.44</version>
+		</dependency>
+		<!-- jsoup-1.11.2 依赖 -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.11.2</version>
+		</dependency>
+
+	</dependencies>
+	<build>
+		<finalName>WebSpiderAdvanced4Job002</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>jdbc.properties</exclude>
+					<exclude>spider.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+
+			</plugin>
+			<!--解决配置文件复制更新问题 -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<copy file="${ant-properties-path}" overwrite="true"
+									tofile="${project.build.directory}/jdbc.properties" />
+								<copy file="${ant-properties-path-2}" overwrite="true"
+									tofile="${project.build.directory}/spider.properties" />
+								<copy file="${ant-properties-path-3}" overwrite="true"
+									tofile="${project.build.directory}/classes/spider.properties" />
+							</tasks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+						<manifest>
+							<mainClass>com.tl.job002.controller.SystemController</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>assembly</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
