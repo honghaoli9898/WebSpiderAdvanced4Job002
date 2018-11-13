@@ -102,11 +102,18 @@ public class NewsItemParser4JsoupImpl implements NewsItemParserInterface {
 		String body = null;
 		if (elements.size() > 0) {
 			body = elements.get(0).text();
-		} else {
+		}
+		if (body == null) {
+			bodySelector = "div.TRS_Editor";
+			elements = doc.select(bodySelector);
+			body = elements.get(0).text();
+		}
+		if (body == null) {
 			bodySelector = "#container";
 			elements = doc.select(bodySelector);
 			body = elements.get(0).text();
 		}
+
 		body = body.trim();
 		itemEntity = new NewsItemEntity();
 		itemEntity.setSourceName(sourceName);

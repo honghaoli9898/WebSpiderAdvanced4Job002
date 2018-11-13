@@ -21,10 +21,10 @@ public class HtmlParserManager {
 	}
 
 	public static void main(String[] args) throws ParseException {
-		String url = "http://news.youth.cn/gn/201811/t20181113_11783711.htm";
+		String url = "http://news.youth.cn/gn/201811/t20181105_11775194.htm";
 		DownloadInterface download = new WebpageDownloadUtil4HttpClient();
 		String htmlSource = download.download(url);
 		NewsItemEntity itemEntityList = parserHtmlSource4CrawlUrl(htmlSource);
-		System.out.println(itemEntityList);
+		System.out.println(itemEntityList.getBody());
 	}
 }

@@ -10,6 +10,15 @@ import redis.clients.jedis.Jedis;
  */
 public class RedisOperUtil {
 	private Jedis jedis;
+	private static RedisOperUtil redisOperUtil = null;
+
+	public static RedisOperUtil getInstance() {
+		if (redisOperUtil == null) {
+			return new RedisOperUtil(SystemConfigParas.redis_ip, SystemConfigParas.redis_passpost,
+					SystemConfigParas.redis_auth);
+		}
+		return redisOperUtil;
+	}
 
 	public Jedis getJedis() {
 		return jedis;
@@ -19,7 +28,7 @@ public class RedisOperUtil {
 		this.jedis = jedis;
 	}
 
-	public RedisOperUtil(String ip, int port, String password) {
+	private RedisOperUtil(String ip, int port, String password) {
 		jedis = new Jedis(ip, port);
 		jedis.auth(password);
 	}
@@ -39,7 +48,6 @@ public class RedisOperUtil {
 	public static void main(String[] args) {
 		RedisOperUtil redisOperUtil = new RedisOperUtil(SystemConfigParas.redis_ip, SystemConfigParas.redis_passpost,
 				SystemConfigParas.redis_auth);
-		redisOperUtil.set("k1_from_eclipse", "v1_from_eclipse");
-		System.out.println(redisOperUtil.get("k1_from_eclipse"));
+		redisOperUtil.getJedis().flushAll();
 	}
 }

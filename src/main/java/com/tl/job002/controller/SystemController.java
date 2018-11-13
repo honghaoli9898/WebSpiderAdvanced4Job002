@@ -25,21 +25,25 @@ public class SystemController {
 
 	// 主线程开始
 	public static void main(String[] args) throws Exception {
-		// 启动下载线程 并完成解析
-		DownloadManager.start();
-		// 采用系统监控管理器
-		MonitorManager.start();
-
-		// 周期执行
-		int circleCounter = 1;
-		while (true) {
-			logger.info("第" + circleCounter + "轮添加种子任务开始");
-			UIManager.parseSeedUrlsTaskToSchedule();
-			logger.info("第" + circleCounter + "轮添加种子任务结束");
-			circleCounter++;
-			logger.info("即将休息" + SystemConfigParas.add_seed_time_one_circle / 1000 + "秒");
-			Thread.sleep(SystemConfigParas.add_seed_time_one_circle);
-			logger.info("第" + circleCounter + "轮执行结束");
+		if (SystemConfigParas.is_master) {
+			// 周期执行
+			int circleCounter = 1;
+			// 采用系统监控管理器
+			MonitorManager.start();
+			// 主节点
+			while (true) {
+				logger.info("第" + circleCounter + "轮添加种子任务开始");
+				UIManager.parseSeedUrlsTaskToSchedule();
+				logger.info("第" + circleCounter + "轮添加种子任务结束");
+				circleCounter++;
+				logger.info("即将休息" + SystemConfigParas.add_seed_time_one_circle / 1000 + "秒");
+				Thread.sleep(SystemConfigParas.add_seed_time_one_circle);
+				logger.info("第" + circleCounter + "轮执行结束");
+			}
+		} else {
+			// 子节点
+			// 启动下载线程 并完成解析
+			DownloadManager.start();
 		}
 	}
 }

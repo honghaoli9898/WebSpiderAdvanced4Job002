@@ -35,6 +35,10 @@ public class ReadConfigUtil {
 		reader.close();
 	}
 
+	public boolean getBooleanValue(String key) {
+		return Boolean.parseBoolean(getValue(key));
+	}
+
 	public String getValue(String key) {
 		return configObj.getProperty(key);
 	}

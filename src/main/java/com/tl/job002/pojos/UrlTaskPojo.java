@@ -1,12 +1,14 @@
 package com.tl.job002.pojos;
 
+import java.io.Serializable;
+
 /**
  * 对url任务的封装类
  * 
  * @author lihonghao
  * @date 2018年11月6日
  */
-public class UrlTaskPojo {
+public class UrlTaskPojo implements Serializable {
 	private String title;
 	private String url;
 	private String postTime;

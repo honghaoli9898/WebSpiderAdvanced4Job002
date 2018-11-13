@@ -18,6 +18,7 @@ public class DownloadRunnable implements Runnable {
 	private boolean enableRunning = true;
 	private String name;
 	public static Logger logger = Logger.getLogger(DownloadRunnable.class);
+	public static int repetitionNumber = 0;
 
 	public DownloadRunnable(String name) {
 		this.name = name;
@@ -33,16 +34,25 @@ public class DownloadRunnable implements Runnable {
 				String htmlSource = downloadInterface.download(taskPojo.getUrl());
 				if (htmlSource != null) {
 					try {
-						logger.info(this.name + "将进入解析环节");
+						logger.info(taskPojo.getUrl() + "将进入解析环节");
 						NewsItemEntity itemEntity = HtmlParserManager.parserHtmlSource4CrawlUrl(htmlSource);
 						itemEntity.setTitle(taskPojo.getTitle());
 						itemEntity.setPostTimeString(taskPojo.getPostTime());
 						itemEntity.setSourceURL(taskPojo.getUrl());
 						// 将解析结果进行持久化存储
 						boolean isSaveOk = DataPersistManager.persist(itemEntity);
-						if (!isSaveOk) {
-							TaskScheduleManager.cleanTodoTaskList();
-							logger.info("已发现重复采集的数据,将清空本轮的带采集的任务,待下一轮开启");
+						synchronized (TaskScheduleManager.todoTaskPojoList) {
+							if (!isSaveOk) {
+
+								if (repetitionNumber > 100) {
+									TaskScheduleManager.cleanTodoTaskList();
+									logger.info("已发现重复采集的数据,将清空本轮的带采集的任务,待下一轮开启");
+								}
+								repetitionNumber++;
+							} else {
+								repetitionNumber = 0;
+								logger.info("此url时重复采集的数据");
+							}
 						}
 						// 将已成功采集完成的URL加入到donetask 中
 						TaskScheduleManager.addDoneUrlPojo(taskPojo);

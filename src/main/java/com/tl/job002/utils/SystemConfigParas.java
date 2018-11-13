@@ -20,6 +20,10 @@ public class SystemConfigParas {
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * 读取爬虫节点角色
+	 */
+	public static boolean is_master = configUtil.getBooleanValue("is_master");
 	// 初始化的下载消费线程数量
 	public static int init_consumer_number = Integer.parseInt(configUtil.getValue("init_consumer_number"));
 	// 每次遇到空任务时的睡眠时间单位为秒

@@ -4,7 +4,10 @@ import org.apache.log4j.Logger;
 
 import com.tl.job002.schedule.TaskScheduleManager;
 import com.tl.job002.utils.DateUtil;
+import com.tl.job002.utils.RedisOperUtil;
 import com.tl.job002.utils.SystemConfigParas;
+
+import redis.clients.jedis.Jedis;
 
 /**
  * 线程监控类
@@ -15,14 +18,18 @@ import com.tl.job002.utils.SystemConfigParas;
 public class MonitorManager {
 	public static Logger logger = Logger.getLogger(MonitorManager.class);
 	// 一共采集入库了多少条新闻数据
-	public static int totalNewsEntityNumber = 0;
+	public static long totalNewsEntityNumber = 0;
+	// 初始化redis工具类
+	// 定义hashmap对象
+	public static String currentDayStatisticKey = "current_day_statistic_key";
+	public static RedisOperUtil redisOperUtil = RedisOperUtil.getInstance();
 
 	public static synchronized void addNewsEntityNumber4History(int newsAddNumber) {
 		totalNewsEntityNumber += newsAddNumber;
 	}
 
 	// 直接数据值恢复-历史值
-	public static synchronized void setTotalNewsEntityNumber(int totalNewsEntityNumber) {
+	public static synchronized void setTotalNewsEntityNumber(long totalNewsEntityNumber) {
 		MonitorManager.totalNewsEntityNumber += totalNewsEntityNumber;
 	}
 
@@ -36,11 +43,14 @@ public class MonitorManager {
 	public static String currenyDay = DateUtil.getCurrentDay();
 
 	public static synchronized void addNewsEntityNumber4CurrentDay(int newsAddNumber) {
-		if (currenyDay.equals(DateUtil.getCurrentDay())) {
-			totalCurrentDayEntityNumber += newsAddNumber;
+		Jedis jedis = redisOperUtil.getJedis();
+		String currentDay = DateUtil.getCurrentDay();
+		if (jedis.hexists(currentDayStatisticKey, currentDay)) {
+			int oldCurrentDayFreq = Integer.parseInt(jedis.hget(currentDayStatisticKey, currentDay));
+			totalCurrentDayEntityNumber = oldCurrentDayFreq + 1;
+			jedis.hset(currentDayStatisticKey, currentDay, totalCurrentDayEntityNumber + "");
 		} else {
-			totalCurrentDayEntityNumber = newsAddNumber;
-			currenyDay = DateUtil.getCurrentDay();
+			jedis.hset(currentDayStatisticKey, currentDay, "1");
 		}
 		addNewsEntityNumber4History(newsAddNumber);
 	}
