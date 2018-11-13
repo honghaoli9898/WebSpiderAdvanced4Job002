@@ -32,6 +32,7 @@ public class TaskScheduleManager {
 	}
 
 	public static void recovery() {
+		// 恢复历史的数据
 		synchronized (savedNewsEntityUrlSet) {
 			String sql = "select * from news_item_info_v2";
 			ResultSet rs = DataPersistManager.getResultSet(sql);
@@ -50,7 +51,6 @@ public class TaskScheduleManager {
 					e.printStackTrace();
 				}
 			}
-			// 恢复历史的数据
 			MonitorManager.setTotalNewsEntityNumber(savedNewsEntityUrlSet.size());
 			// 恢复当天的数据
 			sql = "select COUNT(1) from news_item_info_v2 where DATE_FORMAT(insert_time,'%Y-%m-%d')='"

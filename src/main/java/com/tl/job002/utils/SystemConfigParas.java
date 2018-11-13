@@ -2,11 +2,12 @@ package com.tl.job002.utils;
 
 import java.io.IOException;
 import com.tl.job002.utils.ReadConfigUtil;;
+
 /**
- * ÏµÍ³ÅäÖÃ²ÎÊı¹¤¾ßÀà,¼¯ÖĞ¶ÁÈ¡
+ * ç³»ç»Ÿé…ç½®å‚æ•°å·¥å…·ç±»,é›†ä¸­è¯»å–
  * 
  * @author lihonghao
- * @date 2018Äê11ÔÂ8ÈÕ
+ * @date 2018å¹´11æœˆ8æ—¥
  */
 public class SystemConfigParas {
 	public static ReadConfigUtil configUtil = null;
@@ -19,22 +20,30 @@ public class SystemConfigParas {
 			e.printStackTrace();
 		}
 	}
-	// ³õÊ¼»¯µÄÏÂÔØÏû·ÑÏß³ÌÊıÁ¿
+	// åˆå§‹åŒ–çš„ä¸‹è½½æ¶ˆè´¹çº¿ç¨‹æ•°é‡
 	public static int init_consumer_number = Integer.parseInt(configUtil.getValue("init_consumer_number"));
-	// Ã¿´ÎÓöµ½¿ÕÈÎÎñÊ±µÄË¯ÃßÊ±¼äµ¥Î»ÎªÃë
+	// æ¯æ¬¡é‡åˆ°ç©ºä»»åŠ¡æ—¶çš„ç¡çœ æ—¶é—´å•ä½ä¸ºç§’
 	public static int once_sleep_time_for_empty_task = Integer
 			.parseInt(configUtil.getValue("once_sleep_time_for_empty_task")) * 1000;
-	// ¼à¿ØÏß³ÌË¯ÃßÊ±¼ä
+	// ç›‘æ§çº¿ç¨‹ç¡çœ æ—¶é—´
 	public static int monitor_sleep_time = Integer.parseInt(configUtil.getValue("monitor_sleep_time")) * 1000;
-	//Ã¿Ò³×î´óÖØ¸´´ÎÊı
-	public static int max_repeat_number_in_one_page = Integer.parseInt(configUtil.getValue("max_repeat_number_in_one_page"));
-	//Ò»ÂÖÌí¼ÓÖÖ×ÓµÄÊ±¼ä¼ä¸ô
-	public static int add_seed_time_one_circle = Integer.parseInt(configUtil.getValue("add_seed_time_one_circle"))*1000;
-	// Êı¾İ¿â
+	// æ¯é¡µæœ€å¤§é‡å¤æ¬¡æ•°
+	public static int max_repeat_number_in_one_page = Integer
+			.parseInt(configUtil.getValue("max_repeat_number_in_one_page"));
+	// ä¸€è½®æ·»åŠ ç§å­çš„æ—¶é—´é—´éš”
+	public static int add_seed_time_one_circle = Integer.parseInt(configUtil.getValue("add_seed_time_one_circle"))
+			* 1000;
+	// redisæ•°æ®åº“
+	public static String redis_ip = configUtil.getValue("redis_ip");
+	public static int redis_passpost = Integer.parseInt(configUtil.getValue("redis_passpost"));
+	public static String redis_auth = configUtil.getValue("redis_auth");
+
+	// æ•°æ®åº“
 	public static String db_driver = configUtil_db.getValue("db_driver");
 	public static String db_url = configUtil_db.getValue("db_url");
 	public static String db_username = configUtil_db.getValue("db_username");
 	public static String db_password = configUtil_db.getValue("db_password");
+
 	public static void main(String[] args) {
 		System.out.println(init_consumer_number);
 	}
