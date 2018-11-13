@@ -1,7 +1,7 @@
 package com.tl.job002.utils;
 
 import java.io.IOException;
-
+import com.tl.job002.utils.ReadConfigUtil;;
 /**
  * 系统配置参数工具类,集中读取
  * 
@@ -35,4 +35,7 @@ public class SystemConfigParas {
 	public static String db_url = configUtil_db.getValue("db_url");
 	public static String db_username = configUtil_db.getValue("db_username");
 	public static String db_password = configUtil_db.getValue("db_password");
+	public static void main(String[] args) {
+		System.out.println(init_consumer_number);
+	}
 }

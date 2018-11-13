@@ -16,9 +16,27 @@ public class NewsItemEntity {
 	private Date insertDate;
 	private Date postDateObj;
 	private String postTimeString;
+	private String sourceName;
+	private String body;
+
+	public String getSourceName() {
+		return sourceName;
+	}
+
+	public void setSourceName(String sourceName) {
+		this.sourceName = sourceName;
+	}
+
+	public String getBody() {
+		return body;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
+	}
 
 	public NewsItemEntity() {
-
+		this.insertDate = DateUtil.getDate();
 	}
 
 	public NewsItemEntity(String title, String sourceURL, String postTimeString) throws ParseException {
@@ -26,6 +44,18 @@ public class NewsItemEntity {
 		this.title = title;
 		this.sourceURL = sourceURL;
 		this.postTimeString = postTimeString;
+		this.insertDate = DateUtil.getDate();
+		this.postDateObj = DateUtil.parserStringToDate(postTimeString);
+	}
+
+	public NewsItemEntity(String title, String sourceURL, String postTimeString, String sourceName, String body)
+			throws ParseException {
+		super();
+		this.title = title;
+		this.sourceURL = sourceURL;
+		this.postTimeString = postTimeString;
+		this.sourceName = sourceName;
+		this.body = body;
 		this.insertDate = DateUtil.getDate();
 		this.postDateObj = DateUtil.parserStringToDate(postTimeString);
 	}
@@ -66,14 +96,15 @@ public class NewsItemEntity {
 		return postTimeString;
 	}
 
-	public void setPostTimeString(String postTimeString) {
+	public void setPostTimeString(String postTimeString) throws ParseException {
+		this.postDateObj = DateUtil.parserStringToDate(postTimeString);
 		this.postTimeString = postTimeString;
 	}
 
 	@Override
 	public String toString() {
 		return "NewsItemEntity [title=" + title + ", sourceURL=" + sourceURL + ", insertDate=" + insertDate
-				+ ", postDateObj=" + postDateObj + ", postTimeString=" + postTimeString + "]";
+				+ ", postDateObj=" + postDateObj + ", sourceName=" + sourceName + ", body=" + body + "]";
 	}
 
 	public String toUniqString() {

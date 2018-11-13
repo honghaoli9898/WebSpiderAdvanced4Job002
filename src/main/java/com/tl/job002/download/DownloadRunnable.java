@@ -1,7 +1,6 @@
 package com.tl.job002.download;
 
 import java.text.ParseException;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -34,10 +33,14 @@ public class DownloadRunnable implements Runnable {
 				String htmlSource = downloadInterface.download(taskPojo.getUrl());
 				if (htmlSource != null) {
 					try {
-						List<NewsItemEntity> itemEntityList = HtmlParserManager.parserHtmlSource(htmlSource);
+						logger.info(this.name + "将进入解析环节");
+						NewsItemEntity itemEntity = HtmlParserManager.parserHtmlSource4CrawlUrl(htmlSource);
+						itemEntity.setTitle(taskPojo.getTitle());
+						itemEntity.setPostTimeString(taskPojo.getPostTime());
+						itemEntity.setSourceURL(taskPojo.getUrl());
 						// 将解析结果进行持久化存储
-						boolean findRepeatFlag = DataPersistManager.persist(itemEntityList);
-						if(findRepeatFlag){
+						boolean isSaveOk = DataPersistManager.persist(itemEntity);
+						if (!isSaveOk) {
 							TaskScheduleManager.cleanTodoTaskList();
 							logger.info("已发现重复采集的数据,将清空本轮的带采集的任务,待下一轮开启");
 						}

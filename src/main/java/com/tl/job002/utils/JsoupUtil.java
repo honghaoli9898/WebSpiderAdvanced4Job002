@@ -94,11 +94,12 @@ public class JsoupUtil {
 		}
 		return value;
 	}
+
 	public static void main(String[] args) throws ParseException {
 		String url = "http://news.youth.cn/gn/";
 		DownloadInterface download = new WebpageDownloadUtil4HttpClient();
 		String htmlSource = download.download(url);
 		NewsItemParserInterface s = new NewsItemParser4JsoupImpl();
-		s.parserHtmlSource(htmlSource);
+		s.parserHtmlSource4RootUrl(htmlSource);
 	}
 }

@@ -13,7 +13,7 @@ import com.tl.job002.utils.SystemConfigParas;
 
 public class DataPersist4MysqlImpl implements DataPersistrnceInterface {
 	private DataBaseUtil databaseUtil;
-	String sql = "insert into news_item_info_middle(title,source_url,post_time,insert_time) values(?,?,?,?)";
+	String sql = "insert into news_item_info_v2(title,source_url,post_time,source_name,body,insert_time) values(?,?,?,?,?,?)";
 
 	public DataPersist4MysqlImpl() {
 		try {
@@ -35,7 +35,10 @@ public class DataPersist4MysqlImpl implements DataPersistrnceInterface {
 					ps.setString(1, itemEntity.getTitle());
 					ps.setString(2, itemEntity.getSourceURL());
 					ps.setTimestamp(3, new java.sql.Timestamp(itemEntity.getPostDateObj().getTime()));
-					ps.setTimestamp(4, new java.sql.Timestamp(itemEntity.getInsertDate().getTime()));
+					// 插入新增的两个字段
+					ps.setString(4, itemEntity.getSourceName());
+					ps.setString(5, itemEntity.getBody());
+					ps.setTimestamp(6, new java.sql.Timestamp(itemEntity.getInsertDate().getTime()));
 					ps.addBatch();
 				}
 				ps.executeBatch();
@@ -55,7 +58,9 @@ public class DataPersist4MysqlImpl implements DataPersistrnceInterface {
 			ps.setString(1, itemEntity.getTitle());
 			ps.setString(2, itemEntity.getSourceURL());
 			ps.setTimestamp(3, new java.sql.Timestamp(itemEntity.getPostDateObj().getTime()));
-			ps.setTimestamp(4, new java.sql.Timestamp(itemEntity.getInsertDate().getTime()));
+			ps.setString(4, itemEntity.getSourceName());
+			ps.setString(5, itemEntity.getBody());
+			ps.setTimestamp(6, new java.sql.Timestamp(itemEntity.getInsertDate().getTime()));
 			ps.executeUpdate();
 			return true;
 		} catch (SQLException e) {

@@ -1,8 +1,6 @@
 package com.tl.job002.persistence;
 
 import java.sql.ResultSet;
-import java.util.Iterator;
-import java.util.List;
 
 import com.tl.job002.iface.persistence.DataPersistrnceInterface;
 import com.tl.job002.monitor.MonitorManager;
@@ -23,27 +21,16 @@ public class DataPersistManager {
 	public static int max_repeat_number_in_one_page = SystemConfigParas.max_repeat_number_in_one_page;
 
 	// 该返回值boolean,若为true则代表发现重复采集出来的结果,若为false则没有重复
-	public static synchronized boolean persist(List<NewsItemEntity> itemList) {
-		boolean findRepeatFlag = false;
-		Iterator<NewsItemEntity> entityIterator = itemList.iterator();
-		int findRepeatNumber = 0;
-		while (entityIterator.hasNext()) {
-			NewsItemEntity entity = entityIterator.next();
-			if (!TaskScheduleManager.isInSaveNewsEntityUrlSet(entity.toUniqString())) {
-				TaskScheduleManager.addSavedNewsEntityUrlSet(entity.toUniqString());
-			} else {
-				entityIterator.remove();
-				findRepeatNumber++;
-			}
+	public static synchronized boolean persist(NewsItemEntity itemEntity) {
+		if (!TaskScheduleManager.isInSaveNewsEntityUrlSet(itemEntity.toUniqString())) {
+			persistrnceInterface.persist(itemEntity);
+			// 对数据监控管理器进行打点上报数据
+			// 因为历史统计,也是基于当天的,故打点上报当天后,上报历史
+			MonitorManager.addNewsEntityNumber4CurrentDay(1);
+			TaskScheduleManager.addSavedNewsEntityUrlSet(itemEntity.toUniqString());
+			return true;
 		}
-		persistrnceInterface.persist(itemList);
-		// 对数据监控管理器进行打点上报数据
-		// 因为历史统计,也是基于当天的,故打点上报当天后,上报历史
-		MonitorManager.addNewsEntityNumber4CurrentDay(itemList.size());
-		if (findRepeatNumber >= max_repeat_number_in_one_page) {
-			findRepeatFlag = true;
-		}
-		return findRepeatFlag;
+		return false;
 	}
 
 	public static ResultSet getResultSet(String sql) {

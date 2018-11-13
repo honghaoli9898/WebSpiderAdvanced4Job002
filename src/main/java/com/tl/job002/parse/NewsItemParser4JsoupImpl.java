@@ -5,17 +5,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jsoup.helper.StringUtil;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.tl.job002.iface.parser.NewsItemParserInterface;
+import com.tl.job002.pojos.UrlTaskPojo;
+import com.tl.job002.pojos.UrlTaskPojo.TaskTypeEnum;
 import com.tl.job002.pojos.entity.NewsItemEntity;
 import com.tl.job002.utils.JsoupUtil;
 import com.tl.job002.utils.JsoupUtil.ContentSelectType;
+import com.tl.job002.utils.RegexUtil;
 import com.tl.job002.utils.StaticValue;
 
 public class NewsItemParser4JsoupImpl implements NewsItemParserInterface {
 	public static Logger logger = Logger.getLogger(NewsItemParser4JsoupImpl.class);
+
 	// @Override
 	// public List<NewsItemEntity> parserHtmlSource(String htmlSource) throws
 	// ParseException {
@@ -33,12 +39,13 @@ public class NewsItemParser4JsoupImpl implements NewsItemParserInterface {
 	//
 	// return null;
 	// }
+	@SuppressWarnings("unused")
 	@Override
-	public List<NewsItemEntity> parserHtmlSource(String htmlSource) {
-		List<NewsItemEntity> itemList = new ArrayList<NewsItemEntity>();
+	public List<UrlTaskPojo> parserHtmlSource4RootUrl(String htmlSource) {
+		List<UrlTaskPojo> crawlTaskList = new ArrayList<UrlTaskPojo>();
 		String selector = "ul.tj3_1>li";
 		Elements liElements = JsoupUtil.getElementsBySelector(htmlSource, selector);
-		NewsItemEntity itemEntity = null;
+		UrlTaskPojo urlTaskPojo = null;
 		String title = null;
 		String postTime = null;
 		String href = null;
@@ -46,19 +53,70 @@ public class NewsItemParser4JsoupImpl implements NewsItemParserInterface {
 			title = JsoupUtil.getChildElementValue(element, 1, ContentSelectType.TEXT);
 			postTime = JsoupUtil.getChildElementValue(element, 0, ContentSelectType.TEXT);
 			href = JsoupUtil.getAttributeValue(element.child(1), "href");
-			if(href.startsWith("../")){
-				href = StaticValue.indexUrl+href.substring(3);
-			}else{
-				href = StaticValue.rootUrl+href.substring(2);
+			if (href.startsWith("../")) {
+				href = StaticValue.indexUrl + href.substring(3);
+			} else {
+				href = StaticValue.rootUrl + href.substring(2);
 			}
-			try {
-				itemEntity = new NewsItemEntity(title, href, postTime);
-			} catch (ParseException e) {
-				e.printStackTrace();
-				logger.error("出错信息:"+title+'\n'+href+'\n'+postTime);
-			}
-			itemList.add(itemEntity);
+			urlTaskPojo = new UrlTaskPojo(title, href, postTime, TaskTypeEnum.CRAWL_TASK);
+			crawlTaskList.add(urlTaskPojo);
 		}
-		return itemList;
+		return crawlTaskList;
+	}
+
+	@Override
+	public NewsItemEntity parserHtmlSource4CrawlTaskUrl(String htmlSource) throws ParseException {
+		NewsItemEntity itemEntity = null;
+		// 首先拿到doc对象
+		Document doc = JsoupUtil.getDoc(htmlSource);
+		// // 取得title文本值
+		// String titleSelector = "p.pbt";
+		// Elements elements = doc.select(titleSelector);
+		// String title = null;
+		// if (elements.size() > 0) {
+		// title = elements.get(0).text();
+		// } else {
+		// titleSelector = "div.page_title>h1";
+		// elements = doc.select(titleSelector);
+		// title = elements.get(0).text();
+		// }
+		// title = title.trim();
+		// 发布时间由于不一致,采用外部发布时间为准
+
+		// 来源
+		String sourceNameRegex = "[\\s]+来源：[\\s\\S]*?>([\\s\\S]*?)<";
+		String sourceNameRegexBak = "[\\s]+来源：[\\s\\S]*?[>]*([\\s\\S]*?)<";
+		String sourceName = RegexUtil.getMatchText(htmlSource, sourceNameRegex, 1);
+		if (StringUtil.isBlank(sourceName)) {
+			sourceName = RegexUtil.getMatchText(htmlSource, sourceNameRegexBak, 1);
+		}
+		if (StringUtil.isBlank(sourceName)) {
+			sourceNameRegex = "来源：([\\s\\S]*?)<";
+			sourceName = RegexUtil.getMatchText(htmlSource, sourceNameRegex, 1);
+		}
+		sourceName = sourceName.trim();
+
+		// 抽取正文
+		String bodySelector = "div.page_text";
+		Elements elements = doc.select(bodySelector);
+		String body = null;
+		if (elements.size() > 0) {
+			body = elements.get(0).text();
+		} else {
+			bodySelector = "#container";
+			elements = doc.select(bodySelector);
+			body = elements.get(0).text();
+		}
+		body = body.trim();
+		itemEntity = new NewsItemEntity();
+		itemEntity.setSourceName(sourceName);
+		itemEntity.setBody(body);
+		return itemEntity;
+	}
+
+	public static void main(String[] args) {
+		String text = "<span id=\"source_baidu\" style=\"padding-right: 31px;\">来源：中新网</span>";
+		String postTimeRegex = "来源：([\\s\\S]*?)<";
+		System.out.println(RegexUtil.getMatchText(text, postTimeRegex, 1));
 	}
 }

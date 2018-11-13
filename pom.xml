@@ -92,8 +92,7 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<excludes>
-					<exclude>jdbc.properties</exclude>
-					<exclude>spider.properties</exclude>
+					<!-- <exclude>jdbc.properties</exclude> <exclude>spider.properties</exclude> -->
 				</excludes>
 			</resource>
 		</resources>
@@ -121,11 +120,11 @@
 						<configuration>
 							<tasks>
 								<copy file="${ant-properties-path}" overwrite="true"
-									tofile="${project.build.directory}/jdbc.properties" />
+									tofile="${project.build.directory}/classes/jdbc.properties" />
 								<copy file="${ant-properties-path-2}" overwrite="true"
-									tofile="${project.build.directory}/spider.properties" />
-								<copy file="${ant-properties-path-3}" overwrite="true"
 									tofile="${project.build.directory}/classes/spider.properties" />
+								<copy file="${ant-properties-path-3}" overwrite="true"
+									tofile="${project.build.directory}/classes/log4j.properties" />
 							</tasks>
 						</configuration>
 					</execution>

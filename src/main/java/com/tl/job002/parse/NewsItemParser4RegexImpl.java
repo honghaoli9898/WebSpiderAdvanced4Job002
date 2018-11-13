@@ -7,16 +7,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.tl.job002.iface.parser.NewsItemParserInterface;
+import com.tl.job002.pojos.UrlTaskPojo;
+import com.tl.job002.pojos.UrlTaskPojo.TaskTypeEnum;
 import com.tl.job002.pojos.entity.NewsItemEntity;
 import com.tl.job002.utils.RegexUtil;
 import com.tl.job002.utils.StaticValue;
 
 public class NewsItemParser4RegexImpl implements NewsItemParserInterface {
 
+	@SuppressWarnings("unused")
 	@Override
-	public List<NewsItemEntity> parserHtmlSource(String htmlSource) throws ParseException {
-		List<NewsItemEntity> itemEntityList = new ArrayList<NewsItemEntity>();
-		NewsItemEntity itemEntity = null;
+	public List<UrlTaskPojo> parserHtmlSource4RootUrl(String htmlSource) throws ParseException {
+		List<UrlTaskPojo> itemEntityList = new ArrayList<UrlTaskPojo>();
+		UrlTaskPojo urlTaskPojo = null;
 		/**
 		 * 正则解析开始
 		 */
@@ -43,10 +46,15 @@ public class NewsItemParser4RegexImpl implements NewsItemParserInterface {
 			// 获取发布时间
 			String postTimeRegex = "<font>([\\s\\S]*?)</font>";
 			String postTime = RegexUtil.getMatchText(input, postTimeRegex, 1);
-			itemEntity = new NewsItemEntity(title, href, postTime);
-			itemEntityList.add(itemEntity);
+			urlTaskPojo = new UrlTaskPojo(title, href, postTime, TaskTypeEnum.CRAWL_TASK);
+			itemEntityList.add(urlTaskPojo);
 		}
 		return itemEntityList;
+	}
+
+	@Override
+	public NewsItemEntity parserHtmlSource4CrawlTaskUrl(String htmlSource) throws ParseException {
+		return null;
 	}
 
 }
