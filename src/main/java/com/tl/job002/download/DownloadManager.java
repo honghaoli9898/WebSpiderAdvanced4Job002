@@ -20,7 +20,7 @@ public class DownloadManager {
 	 */
 	public static void start() {
 		List<Runnable> runnableList = new ArrayList<Runnable>();
-		for (int i = 0; i < SystemConfigParas.init_consumer_number; i++) {
+		for (int i = 0; i < SystemConfigParas.init_download_consumer_number; i++) {
 			DownloadRunnable oneRunnable = new DownloadRunnable("download_consumer_" + i);
 			new Thread(tGroup, oneRunnable, "thread_" + i).start();
 			runnableList.add(oneRunnable);
@@ -34,7 +34,7 @@ public class DownloadManager {
 
 	// 一共初始化多少线程
 	public static int getInitThreadNumber() {
-		return SystemConfigParas.init_consumer_number;
+		return SystemConfigParas.init_download_consumer_number;
 	}
 
 	// 停止掉所有线程

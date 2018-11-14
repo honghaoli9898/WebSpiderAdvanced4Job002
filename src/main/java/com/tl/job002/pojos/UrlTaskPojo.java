@@ -8,6 +8,7 @@ import java.io.Serializable;
  * @author lihonghao
  * @date 2018年11月6日
  */
+@SuppressWarnings("serial")
 public class UrlTaskPojo implements Serializable {
 	private String title;
 	private String url;
@@ -35,6 +36,11 @@ public class UrlTaskPojo implements Serializable {
 		super();
 		this.title = title;
 		this.url = url;
+	}
+
+	public UrlTaskPojo(String title, String url, TaskTypeEnum taskType) {
+		this(title, url);
+		this.taskType = taskType;
 	}
 
 	public UrlTaskPojo(String title, String url, String postTime, TaskTypeEnum taskType) {
@@ -66,6 +72,10 @@ public class UrlTaskPojo implements Serializable {
 	@Override
 	public String toString() {
 		return "UrlTaskPojo [title=" + title + ", url=" + url + ", taskType=" + taskType + "]";
+	}
+
+	public String uniqString() {
+		return this.title + this.url;
 	}
 
 }

@@ -1,20 +1,25 @@
 package com.tl.job002.download;
 
+import java.io.IOException;
 import java.text.ParseException;
 
 import org.apache.log4j.Logger;
 
 import com.tl.job002.iface.download.DownloadInterface;
 import com.tl.job002.parse.HtmlParserManager;
-import com.tl.job002.persistence.DataPersistManager;
 import com.tl.job002.pojos.UrlTaskPojo;
 import com.tl.job002.pojos.entity.NewsItemEntity;
 import com.tl.job002.schedule.TaskScheduleManager;
 import com.tl.job002.ui.UIManager;
+import com.tl.job002.utils.ObjectAndByteArrayConvertor;
+import com.tl.job002.utils.RedisOperUtil;
+import com.tl.job002.utils.StaticValue;
 import com.tl.job002.utils.SystemConfigParas;
 import com.tl.job002.utils.WebpageDownloadUtil4HttpClient;
 
 public class DownloadRunnable implements Runnable {
+	// 定义存储解析出来的对象的list的key
+	public static String toSaveNewsItemEntityListKey = "to_save_news_item_entity_list_key";
 	private boolean enableRunning = true;
 	private String name;
 	public static Logger logger = Logger.getLogger(DownloadRunnable.class);
@@ -27,8 +32,16 @@ public class DownloadRunnable implements Runnable {
 	@Override
 	public void run() {
 		DownloadInterface downloadInterface = new WebpageDownloadUtil4HttpClient();
+		RedisOperUtil redisOperUtil = RedisOperUtil.getInstance();
 		while (enableRunning) {
-			UrlTaskPojo taskPojo = TaskScheduleManager.take();
+			UrlTaskPojo taskPojo = null;
+			try {
+				taskPojo = TaskScheduleManager.take();
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 			if (taskPojo != null) {
 				// 1.打印下载的内容
 				String htmlSource = downloadInterface.download(taskPojo.getUrl());
@@ -39,25 +52,14 @@ public class DownloadRunnable implements Runnable {
 						itemEntity.setTitle(taskPojo.getTitle());
 						itemEntity.setPostTimeString(taskPojo.getPostTime());
 						itemEntity.setSourceURL(taskPojo.getUrl());
-						// 将解析结果进行持久化存储
-						boolean isSaveOk = DataPersistManager.persist(itemEntity);
-						synchronized (TaskScheduleManager.todoTaskPojoList) {
-							if (!isSaveOk) {
-
-								if (repetitionNumber > 100) {
-									TaskScheduleManager.cleanTodoTaskList();
-									logger.info("已发现重复采集的数据,将清空本轮的带采集的任务,待下一轮开启");
-								}
-								repetitionNumber++;
-							} else {
-								repetitionNumber = 0;
-								logger.info("此url时重复采集的数据");
-							}
-						}
-						// 将已成功采集完成的URL加入到donetask 中
-						TaskScheduleManager.addDoneUrlPojo(taskPojo);
-						logger.info(taskPojo.getUrl() + "解析持久化完成,即将下一页");
+						// 将解析出来的结果,回传到redis中
+						byte[] byteArray = ObjectAndByteArrayConvertor.convertObjectToByteArray(itemEntity);
+						redisOperUtil.getJedis()
+								.lpush(toSaveNewsItemEntityListKey.getBytes(StaticValue.defaultENCODING), byteArray);
+						logger.info(taskPojo.getUrl() + ",数据下载与解析完成,已推送到redis中");
 					} catch (ParseException e) {
+						e.printStackTrace();
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				} else {

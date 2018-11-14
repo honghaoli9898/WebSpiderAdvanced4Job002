@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import com.tl.job002.iface.download.DownloadInterface;
 import com.tl.job002.parse.HtmlParserManager;
 import com.tl.job002.pojos.UrlTaskPojo;
-import com.tl.job002.pojos.entity.NewsItemEntity;
 import com.tl.job002.schedule.TaskScheduleManager;
 import com.tl.job002.utils.IOUtil;
 import com.tl.job002.utils.StaticValue;

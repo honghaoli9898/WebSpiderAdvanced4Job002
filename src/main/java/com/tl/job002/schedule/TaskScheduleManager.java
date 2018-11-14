@@ -1,16 +1,16 @@
 package com.tl.job002.schedule;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.tl.job002.monitor.MonitorManager;
-import com.tl.job002.persistence.DataPersistManager;
 import com.tl.job002.pojos.UrlTaskPojo;
 import com.tl.job002.utils.DateUtil;
+import com.tl.job002.utils.ObjectAndByteArrayConvertor;
 import com.tl.job002.utils.RedisOperUtil;
 
 /**
@@ -21,10 +21,7 @@ import com.tl.job002.utils.RedisOperUtil;
  */
 public class TaskScheduleManager {
 	public static Logger logger = Logger.getLogger(TaskScheduleManager.class);
-	public static LinkedList<UrlTaskPojo> todoTaskPojoList = new LinkedList<UrlTaskPojo>();
 	public static LinkedList<UrlTaskPojo> doneTaskPojoList = new LinkedList<UrlTaskPojo>();
-	// 新闻实体数据的已采集URL的集合,用于判重和增量采集
-	// public static Set<String> savedNewsEntityUrlSet = new HashSet<String>();
 	// redis中与savedNewsEntityUrlSet对应的set结构的key声明
 	public static String uniqUrlSetKey = "uniq_url_key";
 	// redis中与todoTaskPojoList对应的list结构的key声明
@@ -48,48 +45,48 @@ public class TaskScheduleManager {
 		}
 	}
 
+	// 在redis取得SavedNewsEntityUrlSet的长度
+	public static long getSavedNewsEntityUrlSetSize() {
+		synchronized (redisOperUtil) {
+			return redisOperUtil.getJedis().scard(uniqUrlSetKey);
+		}
+	}
+
+	// 判断是否在redis redisOperUtil集合里
+	public static boolean isInSaveNewsEntityUrlSet(String toSaveUrl) {
+		synchronized (redisOperUtil) {
+			return redisOperUtil.getJedis().sismember(uniqUrlSetKey, toSaveUrl);
+		}
+	}
+
+	// 将一个集合添加到redis todoTaskPojoListKey集合中
+	public static void addUrlPojoList(List<UrlTaskPojo> todoAddTaskList) throws IOException {
+		// 分布式后,将该直接进程的对象,转换为redis list操作
+		for (UrlTaskPojo taskPojo : todoAddTaskList) {
+			addOneUrlPojo(taskPojo);
+		}
+		logger.info("当前的todoTaskPojoList.size()=" + getTodoTaskSize());
+	}
+
+	// 添加到redis 的uniqUrlSetKey中 set结构
 	public static void addSavedNewsEntityUrlSet(String saveUrl) {
-		synchronized (uniqUrlSetKey) {
+		synchronized (redisOperUtil) {
 			// savedNewsEntityUrlSet.add(saveUrl);
 			redisOperUtil.getJedis().sadd(uniqUrlSetKey, saveUrl);
 		}
 	}
 
-	// 在redis取得SavedNewsEntityUrlSet的长度
-	public static long getSavedNewsEntityUrlSetSize() {
-		synchronized (uniqUrlSetKey) {
-			// savedNewsEntityUrlSet.add(saveUrl);
-			return redisOperUtil.getJedis().scard(uniqUrlSetKey);
+	// 添加到 redis 的todoTaskPojoListKey中 list结构
+	public static void addOneUrlPojo(UrlTaskPojo taskPojo) throws IOException {
+		synchronized (redisOperUtil) {
+			byte[] byteArray = ObjectAndByteArrayConvertor.convertObjectToByteArray(taskPojo);
+			redisOperUtil.getJedis().lpush(todoTaskPojoListKey.getBytes("utf-8"), byteArray);
 		}
 	}
 
-	// 判断是否在集合里
-	public static boolean isInSaveNewsEntityUrlSet(String toSaveUrl) {
-		synchronized (uniqUrlSetKey) {
-			return redisOperUtil.getJedis().sismember(uniqUrlSetKey, toSaveUrl);
-		}
-	}
-
-	public static void addUrlPojoList(List<UrlTaskPojo> todoAddTaskList) {
-		//分布式后,将该直接进程的对象,转换为redis list操作
-//		todoTaskPojoList.addAll(todoAddTaskList);
-//		redisOperUtil.getJedis().lpu
-	}
-
-	public static void removeUrlTaskPojoList(List<UrlTaskPojo> todoRemoveTaskList) {
-		todoTaskPojoList.removeAll(todoRemoveTaskList);
-	}
-
-	public static void addOneUrlPojo(UrlTaskPojo todoAddTask) {
-		todoTaskPojoList.add(todoAddTask);
-	}
-
+	// 添加到已经下载完的集合中
 	public static void addDoneUrlPojo(UrlTaskPojo doneAddTask) {
 		doneTaskPojoList.add(doneAddTask);
-	}
-
-	public static void removeOneUrlTaskPojo(UrlTaskPojo todoRemoveTask) {
-		todoTaskPojoList.remove(todoRemoveTask);
 	}
 
 	// 已采集的url大小
@@ -97,19 +94,46 @@ public class TaskScheduleManager {
 		return doneTaskPojoList.size();
 	}
 
-	// 带采集的
-	public static int getTodoTaskSize() {
-		return todoTaskPojoList.size();
-	}
-
-	public static UrlTaskPojo take() {
-		synchronized (todoTaskPojoList) {
-			UrlTaskPojo taskPojo = todoTaskPojoList.pollFirst();
-			return taskPojo;
+	// 带采集的集合长度
+	public static long getTodoTaskSize() {
+		synchronized (redisOperUtil) {
+			return redisOperUtil.getJedis().llen(todoTaskPojoListKey);
 		}
 	}
 
-	public static synchronized void cleanTodoTaskList() {
-		todoTaskPojoList.clear();
+	// 从redis todoTaskPojoListKey集合中获得一个待二次采集的对象
+	public static UrlTaskPojo take() throws ClassNotFoundException, IOException {
+		synchronized (redisOperUtil) {
+			byte[] byteArray = redisOperUtil.getJedis().rpop(todoTaskPojoListKey.getBytes("utf-8"));
+			UrlTaskPojo urlTaskPojo = null;
+			if (byteArray != null) {
+				urlTaskPojo = (UrlTaskPojo) ObjectAndByteArrayConvertor.convertByteArrayToObj(byteArray);
+			}
+			return urlTaskPojo;
+		}
 	}
+
+	// 清空redis中todoTaskPojoListKey待二次采集的集合
+	public static void cleanTodoTaskList() throws UnsupportedEncodingException {
+		synchronized (redisOperUtil) {
+			redisOperUtil.getJedis().ltrim(todoTaskPojoListKey.getBytes("utf-8"), 1, 0);
+		}
+	}
+
+	// 删除redis的带二次下载的一个对象
+	public static void removeOneUrlTaskPojo(UrlTaskPojo todoRemoveTask)
+			throws UnsupportedEncodingException, IOException {
+		synchronized (redisOperUtil) {
+			redisOperUtil.getJedis().lrem(todoTaskPojoListKey.getBytes("utf-8"), 0,
+					ObjectAndByteArrayConvertor.convertObjectToByteArray(todoRemoveTask));
+		}
+	}
+
+	// 删除redis的带二次下载的一个对象集合
+	public static void removeUrlTaskPojoList(List<UrlTaskPojo> todoRemoveTaskList) throws IOException {
+		for (UrlTaskPojo urlTaskPojo : todoRemoveTaskList) {
+			removeOneUrlTaskPojo(urlTaskPojo);
+		}
+	}
+
 }

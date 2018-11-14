@@ -1,5 +1,6 @@
 package com.tl.job002.pojos.entity;
 
+import java.io.Serializable;
 /**
  * 解析后的对象类
  * @author lihonghao
@@ -8,9 +9,11 @@ package com.tl.job002.pojos.entity;
 import java.text.ParseException;
 import java.util.Date;
 
+import com.tl.job002.pojos.UrlTaskPojo;
 import com.tl.job002.utils.DateUtil;
 
-public class NewsItemEntity {
+@SuppressWarnings("serial")
+public class NewsItemEntity implements Serializable {
 	private String title;
 	private String sourceURL;
 	private Date insertDate;
@@ -18,6 +21,15 @@ public class NewsItemEntity {
 	private String postTimeString;
 	private String sourceName;
 	private String body;
+	private UrlTaskPojo sourceTaskPojo;
+
+	public UrlTaskPojo getSourceTaskPojo() {
+		return sourceTaskPojo;
+	}
+
+	public void setSourceTaskPojo(UrlTaskPojo sourceTaskPojo) {
+		this.sourceTaskPojo = sourceTaskPojo;
+	}
 
 	public String getSourceName() {
 		return sourceName;

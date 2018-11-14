@@ -39,7 +39,6 @@ public class NewsItemParser4JsoupImpl implements NewsItemParserInterface {
 	//
 	// return null;
 	// }
-	@SuppressWarnings("unused")
 	@Override
 	public List<UrlTaskPojo> parserHtmlSource4RootUrl(String htmlSource) {
 		List<UrlTaskPojo> crawlTaskList = new ArrayList<UrlTaskPojo>();

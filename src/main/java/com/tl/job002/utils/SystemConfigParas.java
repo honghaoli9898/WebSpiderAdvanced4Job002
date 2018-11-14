@@ -23,9 +23,11 @@ public class SystemConfigParas {
 	/**
 	 * 读取爬虫节点角色
 	 */
+	//persist相关的参数
+	public static int init_persist_consumer_number = Integer.parseInt(configUtil.getValue("init_persist_consumer_number"));
 	public static boolean is_master = configUtil.getBooleanValue("is_master");
 	// 初始化的下载消费线程数量
-	public static int init_consumer_number = Integer.parseInt(configUtil.getValue("init_consumer_number"));
+	public static int init_download_consumer_number = Integer.parseInt(configUtil.getValue("init_download_consumer_number"));
 	// 每次遇到空任务时的睡眠时间单位为秒
 	public static int once_sleep_time_for_empty_task = Integer
 			.parseInt(configUtil.getValue("once_sleep_time_for_empty_task")) * 1000;
@@ -47,8 +49,4 @@ public class SystemConfigParas {
 	public static String db_url = configUtil_db.getValue("db_url");
 	public static String db_username = configUtil_db.getValue("db_username");
 	public static String db_password = configUtil_db.getValue("db_password");
-
-	public static void main(String[] args) {
-		System.out.println(init_consumer_number);
-	}
 }

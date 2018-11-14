@@ -60,7 +60,7 @@ public class MonitorManager {
 		return TaskScheduleManager.getDoneTaskSize();
 	}
 
-	public static int getTotalTodoUrlNumber() {
+	public static long getTotalTodoUrlNumber() {
 		return TaskScheduleManager.getTodoTaskSize();
 	}
 
