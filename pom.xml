@@ -7,33 +7,24 @@
 	<!-- 配置maven多环境属性,方便灵活打包 -->
 	<profiles>
 		<profile>
-			<id>dev</id>
+			<id>master</id>
 			<properties>
-				<env>dev</env>
-				<ant-properties-path>src/main/resources/conf/dev/jdbc.properties</ant-properties-path>
-				<ant-properties-path-2>src/main/resources/conf/dev/spider.properties</ant-properties-path-2>
-				<ant-properties-path-3>src/main/resources/conf/dev/log4j.properties</ant-properties-path-3>
+				<env>master</env>
+				<ant-properties-path>src/main/resources/conf/master/jdbc.properties</ant-properties-path>
+				<ant-properties-path-2>src/main/resources/conf/master/spider.properties</ant-properties-path-2>
+				<ant-properties-path-3>src/main/resources/conf/master/log4j.properties</ant-properties-path-3>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
 		</profile>
 		<profile>
-			<id>test</id>
+			<id>slave</id>
 			<properties>
-				<env>test</env>
-				<ant-properties-path>src/main/resources/conf/test/jdbc.properties</ant-properties-path>
-				<ant-properties-path-2>src/main/resources/conf/test/spider.properties</ant-properties-path-2>
-				<ant-properties-path-3>src/main/resources/conf/test/spider.properties</ant-properties-path-3>
-			</properties>
-		</profile>
-		<profile>
-			<id>product</id>
-			<properties>
-				<env>product</env>
-				<ant-properties-path>src/main/resources/conf/product/jdbc.properties</ant-properties-path>
-				<ant-properties-path-2>src/main/resources/conf/product/spider.properties</ant-properties-path-2>
-				<ant-properties-path-3>src/main/resources/conf/product/spider.properties</ant-properties-path-3>
+				<env>slave</env>
+				<ant-properties-path>src/main/resources/conf/slave/jdbc.properties</ant-properties-path>
+				<ant-properties-path-2>src/main/resources/conf/slave/spider.properties</ant-properties-path-2>
+				<ant-properties-path-3>src/main/resources/conf/slave/log4j.properties</ant-properties-path-3>
 			</properties>
 		</profile>
 	</profiles>
@@ -98,7 +89,9 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<excludes>
-					<!-- <exclude>jdbc.properties</exclude> <exclude>spider.properties</exclude> -->
+					<exclude>jdbc.properties</exclude> <exclude>spider.properties</exclude>
+					<exclude>jdbc.properties</exclude> <exclude>jdbc.properties</exclude>
+					<exclude>jdbc.properties</exclude> <exclude>log4j.properties</exclude>
 				</excludes>
 			</resource>
 		</resources>
@@ -126,11 +119,11 @@
 						<configuration>
 							<tasks>
 								<copy file="${ant-properties-path}" overwrite="true"
-									tofile="${project.build.directory}/classes/jdbc.properties" />
+									tofile="${project.build.directory}/jdbc.properties" />
 								<copy file="${ant-properties-path-2}" overwrite="true"
-									tofile="${project.build.directory}/classes/spider.properties" />
+									tofile="${project.build.directory}/spider.properties" />
 								<copy file="${ant-properties-path-3}" overwrite="true"
-									tofile="${project.build.directory}/classes/log4j.properties" />
+									tofile="${project.build.directory}/log4j.properties" />
 							</tasks>
 						</configuration>
 					</execution>

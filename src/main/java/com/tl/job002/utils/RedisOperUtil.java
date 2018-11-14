@@ -49,5 +49,6 @@ public class RedisOperUtil {
 		RedisOperUtil redisOperUtil = new RedisOperUtil(SystemConfigParas.redis_ip, SystemConfigParas.redis_passpost,
 				SystemConfigParas.redis_auth);
 		redisOperUtil.getJedis().flushAll();
+		System.out.println("done!");
 	}
 }

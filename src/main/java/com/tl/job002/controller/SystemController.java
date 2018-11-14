@@ -18,9 +18,9 @@ import com.tl.job002.utils.SystemConfigParas;
 
 public class SystemController {
 	// 将log4j配置文件放到jar包外面的路径更新
-//	static {
-//		PropertyConfigurator.configure(System.getProperty("user.dir") + File.separator + "log4j.properties");
-//	}
+	static {
+		PropertyConfigurator.configure(System.getProperty("user.dir") + File.separator + "log4j.properties");
+	}
 	// 添加日志功能
 	public static Logger logger = Logger.getLogger(SystemController.class);
 

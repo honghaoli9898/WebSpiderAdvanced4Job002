@@ -83,9 +83,10 @@ public class NewsItemParser4JsoupImpl implements NewsItemParserInterface {
 		// 发布时间由于不一致,采用外部发布时间为准
 
 		// 来源
+		String sourceName = "";
 		String sourceNameRegex = "[\\s]+来源：[\\s\\S]*?>([\\s\\S]*?)<";
 		String sourceNameRegexBak = "[\\s]+来源：[\\s\\S]*?[>]*([\\s\\S]*?)<";
-		String sourceName = RegexUtil.getMatchText(htmlSource, sourceNameRegex, 1);
+		sourceName = RegexUtil.getMatchText(htmlSource, sourceNameRegex, 1);
 		if (StringUtil.isBlank(sourceName)) {
 			sourceName = RegexUtil.getMatchText(htmlSource, sourceNameRegexBak, 1);
 		}
@@ -94,11 +95,10 @@ public class NewsItemParser4JsoupImpl implements NewsItemParserInterface {
 			sourceName = RegexUtil.getMatchText(htmlSource, sourceNameRegex, 1);
 		}
 		sourceName = sourceName.trim();
-
 		// 抽取正文
 		String bodySelector = "div.page_text";
 		Elements elements = doc.select(bodySelector);
-		String body = null;
+		String body = "";
 		if (elements.size() > 0) {
 			body = elements.get(0).text();
 		}

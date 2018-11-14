@@ -35,7 +35,7 @@ public class DataPersist4MysqlImpl implements DataPersistrnceInterface {
 					ps.setString(1, itemEntity.getTitle());
 					ps.setString(2, itemEntity.getSourceURL());
 					ps.setTimestamp(3, new java.sql.Timestamp(itemEntity.getPostDateObj().getTime()));
-					// ²åÈëĞÂÔöµÄÁ½¸ö×Ö¶Î
+					// æ’å…¥æ–°å¢çš„ä¸¤ä¸ªå­—æ®µ
 					ps.setString(4, itemEntity.getSourceName());
 					ps.setString(5, itemEntity.getBody());
 					ps.setTimestamp(6, new java.sql.Timestamp(itemEntity.getInsertDate().getTime()));
@@ -71,7 +71,7 @@ public class DataPersist4MysqlImpl implements DataPersistrnceInterface {
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, ParseException {
 		DataPersistrnceInterface mysqlPersist = new DataPersist4MysqlImpl();
-		NewsItemEntity itemEntity = new NewsItemEntity("²âÊÔtitle", "http://www.baidu.com", "2018-07-27 15:04:06");
+		NewsItemEntity itemEntity = new NewsItemEntity("æµ‹è¯•title", "http://www.baidu.com", "2018-07-27 15:04:06");
 		mysqlPersist.persist(itemEntity);
 		System.out.println("done!");
 	}

@@ -35,7 +35,7 @@ public class TaskScheduleManager {
 
 	public static void recovery() {
 		// 恢复历史的数据
-		synchronized (uniqUrlSetKey) {
+		synchronized (redisOperUtil) {
 			MonitorManager.setTotalNewsEntityNumber(getSavedNewsEntityUrlSetSize());
 			// 恢复当天的数据
 			String currentDayFreqString = redisOperUtil.getJedis().hget(MonitorManager.currentDayStatisticKey,
@@ -63,7 +63,9 @@ public class TaskScheduleManager {
 	public static void addUrlPojoList(List<UrlTaskPojo> todoAddTaskList) throws IOException {
 		// 分布式后,将该直接进程的对象,转换为redis list操作
 		for (UrlTaskPojo taskPojo : todoAddTaskList) {
-			addOneUrlPojo(taskPojo);
+			if (!isInSaveNewsEntityUrlSet(taskPojo.uniqString())) {
+				addOneUrlPojo(taskPojo);
+			}
 		}
 		logger.info("当前的todoTaskPojoList.size()=" + getTodoTaskSize());
 	}
@@ -85,12 +87,12 @@ public class TaskScheduleManager {
 	}
 
 	// 添加到已经下载完的集合中
-	public static void addDoneUrlPojo(UrlTaskPojo doneAddTask) {
+	public static synchronized void addDoneUrlTaskPojo(UrlTaskPojo doneAddTask) {
 		doneTaskPojoList.add(doneAddTask);
 	}
 
 	// 已采集的url大小
-	public static int getDoneTaskSize() {
+	public static synchronized int getDoneTaskSize() {
 		return doneTaskPojoList.size();
 	}
 

@@ -68,7 +68,7 @@ public class DataPersisRunnable implements Runnable {
 						boolean isSaveOK = persist(itemEntity);
 						synchronized (obj) {
 							if (!isSaveOK) {
-								if (repetitionNumber > 50) {
+								if (repetitionNumber > SystemConfigParas.max_repeat_number_in_one_page) {
 									TaskScheduleManager.cleanTodoTaskList();
 									logger.info("已发现重复采集的数据,将清空本轮的带采集URL任务列表");
 									repetitionNumber = 0;
@@ -78,7 +78,7 @@ public class DataPersisRunnable implements Runnable {
 								repetitionNumber = 0;
 							}
 						}
-						TaskScheduleManager.addDoneUrlPojo(new UrlTaskPojo(itemEntity.getTitle(),
+						TaskScheduleManager.addDoneUrlTaskPojo(new UrlTaskPojo(itemEntity.getTitle(),
 								itemEntity.getSourceURL(), TaskTypeEnum.CRAWL_TASK));
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
