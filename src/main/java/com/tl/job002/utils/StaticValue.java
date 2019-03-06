@@ -11,6 +11,8 @@ public class StaticValue {
 	public static String defaultENCODING = "UTF-8";
 	public static String rootTitle = "中国青年网-国内新闻";
 	public static String sep_next_line = "\n";
-	public static String sep_semicolon=";";
-	public static String sep_equales="=";
+	public static String sep_semicolon = ";";
+	public static String sep_equales = "=";
+	public static int maxListSize = RandomNumberUtil.getMaxListSize(
+			SystemConfigParas.login_user_name, SystemConfigParas.proxy_ip_pool);
 }

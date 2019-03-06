@@ -21,7 +21,7 @@ public class DownloadManager {
 	public static void start() {
 		List<Runnable> runnableList = new ArrayList<Runnable>();
 		for (int i = 0; i < SystemConfigParas.init_download_consumer_number; i++) {
-			DownloadRunnable oneRunnable = new DownloadRunnable("download_consumer_" + i);
+			JDDownloadRunnable oneRunnable = new JDDownloadRunnable("download_consumer_" + i);
 			new Thread(tGroup, oneRunnable, "thread_" + i).start();
 			runnableList.add(oneRunnable);
 		}
@@ -40,13 +40,13 @@ public class DownloadManager {
 	// 停止掉所有线程
 	public static void stopAllDownloadThreads() {
 		for (Runnable oneRun : runnableList) {
-			DownloadRunnable tempObj = (DownloadRunnable) oneRun;
+			JDDownloadRunnable tempObj = (JDDownloadRunnable) oneRun;
 			tempObj.setEnableRunning(false);
 		}
 	}
 
 	// 停掉某个runnable对象
-	public static void stopOneDownloadThread(DownloadRunnable runnable) {
+	public static void stopOneDownloadThread(JDDownloadRunnable runnable) {
 		runnable.setEnableRunning(false);
 	}
 

@@ -1,5 +1,9 @@
 package com.tl.job002.utils;
 
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+
 import redis.clients.jedis.Jedis;
 
 /**
@@ -14,7 +18,8 @@ public class RedisOperUtil {
 
 	public static RedisOperUtil getInstance() {
 		if (redisOperUtil == null) {
-			return new RedisOperUtil(SystemConfigParas.redis_ip, SystemConfigParas.redis_passpost,
+			return new RedisOperUtil(SystemConfigParas.redis_ip,
+					SystemConfigParas.redis_passpost,
 					SystemConfigParas.redis_auth);
 		}
 		return redisOperUtil;
@@ -45,10 +50,18 @@ public class RedisOperUtil {
 		jedis.set(key, value);
 	}
 
-	public static void main(String[] args) {
-		RedisOperUtil redisOperUtil = new RedisOperUtil(SystemConfigParas.redis_ip, SystemConfigParas.redis_passpost,
+	public static void main(String[] args) throws UnsupportedEncodingException {
+		RedisOperUtil redisOperUtil = new RedisOperUtil(
+				SystemConfigParas.redis_ip, SystemConfigParas.redis_passpost,
 				SystemConfigParas.redis_auth);
 		redisOperUtil.getJedis().flushAll();
+//		String url = "test";
+//		Jedis jedis = redisOperUtil.getJedis();
+//		redisOperUtil.getJedis().sadd(url.getBytes("utf-8"),
+//				"1234".getBytes("utf-8"));
+//		System.out.println(redisOperUtil.getJedis().sismember(url.getBytes("utf-8"),
+//				"1234".getBytes("utf-8")));
+//		System.out.println(jedis.scard(url.getBytes("utf-8")));
 		System.out.println("done!");
 	}
 }

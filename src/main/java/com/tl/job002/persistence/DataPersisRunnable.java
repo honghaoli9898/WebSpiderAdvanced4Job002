@@ -5,16 +5,13 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.log4j.Logger;
 
-import com.tl.job002.download.DownloadRunnable;
 import com.tl.job002.iface.persistence.DataPersistrnceInterface;
 import com.tl.job002.monitor.MonitorManager;
 import com.tl.job002.pojos.UrlTaskPojo;
 import com.tl.job002.pojos.UrlTaskPojo.TaskTypeEnum;
-import com.tl.job002.pojos.entity.NewsItemEntity;
+import com.tl.job002.pojos.entity.JDGoodsCommentsEntriy;
+import com.tl.job002.pojos.entity.JDGoodsEntriy;
 import com.tl.job002.schedule.TaskScheduleManager;
-import com.tl.job002.utils.ObjectAndByteArrayConvertor;
-import com.tl.job002.utils.RedisOperUtil;
-import com.tl.job002.utils.StaticValue;
 import com.tl.job002.utils.SystemConfigParas;
 
 /**
@@ -54,18 +51,22 @@ public class DataPersisRunnable implements Runnable {
 
 	@Override
 	public void run() {
-		persistrnceInterface = new DataPersist4MysqlImpl();
+		persistrnceInterface = new DataPersist4EsImpl();
 		// 初始化redis工具类
-		RedisOperUtil redisOperUtil = RedisOperUtil.getInstance();
 		while (enableRunning) {
 			try {
-				byte[] byteArray = redisOperUtil.getJedis()
-						.rpop(DownloadRunnable.toSaveNewsItemEntityListKey.getBytes(StaticValue.defaultENCODING));
-				if (byteArray != null) {
+				JDGoodsCommentsEntriy jdGoodsComment = TaskScheduleManager
+						.getOneJDCommentEntriy();
+				JDGoodsEntriy jdGoods = TaskScheduleManager
+						.getOneCompleteJDGoodsEntriy();
+				if (jdGoods != null) {
+					persist(jdGoods);
+				} else {
+					logger.info(this.name + "没有带存储的完整商品");
+				}
+				if (jdGoodsComment != null) {
 					try {
-						NewsItemEntity itemEntity = (NewsItemEntity) ObjectAndByteArrayConvertor
-								.convertByteArrayToObj(byteArray);
-						boolean isSaveOK = persist(itemEntity);
+						boolean isSaveOK = persist(jdGoodsComment);
 						synchronized (obj) {
 							if (!isSaveOK) {
 								if (repetitionNumber > SystemConfigParas.max_repeat_number_in_one_page) {
@@ -78,16 +79,18 @@ public class DataPersisRunnable implements Runnable {
 								repetitionNumber = 0;
 							}
 						}
-						TaskScheduleManager.addDoneUrlTaskPojo(new UrlTaskPojo(itemEntity.getTitle(),
-								itemEntity.getSourceURL(), TaskTypeEnum.CRAWL_TASK));
-					} catch (ClassNotFoundException e) {
-						e.printStackTrace();
+						TaskScheduleManager.addDoneUrlTaskPojo(new UrlTaskPojo(
+								jdGoodsComment.getCommentSourceSku(),
+								SystemConfigParas.comment_url.replace("()",
+										jdGoodsComment.getCommentSourceSku()),
+								TaskTypeEnum.CRAWL_TASK));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				} else {
-					logger.info(this.name + "没有带存储的任务,线程将睡眠" + SystemConfigParas.once_sleep_time_for_empty_task / 1000
-							+ "秒");
+					logger.info(this.name + "没有带存储的任务,线程将睡眠"
+							+ SystemConfigParas.once_sleep_time_for_empty_task
+							/ 1000 + "秒");
 					try {
 						Thread.sleep(SystemConfigParas.once_sleep_time_for_empty_task);
 					} catch (InterruptedException e) {
@@ -97,17 +100,33 @@ public class DataPersisRunnable implements Runnable {
 				}
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
 		}
 	}
 
-	public static synchronized boolean persist(NewsItemEntity itemEntity) {
-		if (!TaskScheduleManager.isInSaveNewsEntityUrlSet(itemEntity.toUniqString())) {
-			persistrnceInterface.persist(itemEntity);
+	public static synchronized boolean persist(
+			JDGoodsCommentsEntriy jdGoodsComment) throws IOException {
+		if (!TaskScheduleManager.isInSaveJDCommentSet(jdGoodsComment)) {
+			persistrnceInterface.persist(jdGoodsComment);
+			// 对数据监控管理器进行打点上报数据
+			TaskScheduleManager.addUniqGoodsCommentSet(jdGoodsComment);
+			return true;
+		}
+		return false;
+	}
+
+	public static synchronized boolean persist(JDGoodsEntriy jdGoods)
+			throws IOException {
+		if (!TaskScheduleManager.isInSaveJDGoodsSet(jdGoods.getGoodsSKU())) {
+			persistrnceInterface.persist(jdGoods);
 			// 对数据监控管理器进行打点上报数据
 			// 因为历史统计,也是基于当天的,故打点上报当天后,上报历史
-			MonitorManager.addNewsEntityNumber4CurrentDay(1);
-			TaskScheduleManager.addSavedNewsEntityUrlSet(itemEntity.toUniqString());
+			MonitorManager.addJDGoodsNumber4CurrentDay(1);
+			TaskScheduleManager.addCompleteGoods(jdGoods);
 			return true;
 		}
 		return false;

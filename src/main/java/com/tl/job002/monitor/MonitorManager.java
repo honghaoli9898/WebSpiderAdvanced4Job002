@@ -1,5 +1,7 @@
 package com.tl.job002.monitor;
 
+import java.io.UnsupportedEncodingException;
+
 import org.apache.log4j.Logger;
 
 import com.tl.job002.schedule.TaskScheduleManager;
@@ -17,20 +19,20 @@ import redis.clients.jedis.Jedis;
  */
 public class MonitorManager {
 	public static Logger logger = Logger.getLogger(MonitorManager.class);
-	// 一共采集入库了多少条新闻数据
-	public static long totalNewsEntityNumber = 0;
+	// 一共采集入库了多少条商品数据
+	public static long totalJDGoodsEntityNumber = 0;
 	// 初始化redis工具类
 	// 定义hashmap对象
 	public static String currentDayStatisticKey = "current_day_statistic_key";
 	public static RedisOperUtil redisOperUtil = RedisOperUtil.getInstance();
 
-	public static synchronized void addNewsEntityNumber4History(int newsAddNumber) {
-		totalNewsEntityNumber += newsAddNumber;
+	public static synchronized void addJDGoodsNumber4History(int newsAddNumber) {
+		totalJDGoodsEntityNumber += newsAddNumber;
 	}
 
 	// 直接数据值恢复-历史值
-	public static synchronized void setTotalNewsEntityNumber(long totalNewsEntityNumber) {
-		MonitorManager.totalNewsEntityNumber += totalNewsEntityNumber;
+	public static synchronized void setTotalJDGoodsNumber(long totalNewsEntityNumber) {
+		MonitorManager.totalJDGoodsEntityNumber += totalNewsEntityNumber;
 	}
 
 	// 直接数据值恢复-当天值
@@ -42,7 +44,7 @@ public class MonitorManager {
 	public static int totalCurrentDayEntityNumber = 0;
 	public static String currenyDay = DateUtil.getCurrentDay();
 
-	public static synchronized void addNewsEntityNumber4CurrentDay(int newsAddNumber) {
+	public static synchronized void addJDGoodsNumber4CurrentDay(int newsAddNumber) {
 		Jedis jedis = redisOperUtil.getJedis();
 		String currentDay = DateUtil.getCurrentDay();
 		if (jedis.hexists(currentDayStatisticKey, currentDay)) {
@@ -52,7 +54,7 @@ public class MonitorManager {
 		} else {
 			jedis.hset(currentDayStatisticKey, currentDay, "1");
 		}
-		addNewsEntityNumber4History(newsAddNumber);
+		addJDGoodsNumber4History(newsAddNumber);
 	}
 
 	// 带采集url和已采集
@@ -60,7 +62,7 @@ public class MonitorManager {
 		return TaskScheduleManager.getDoneTaskSize();
 	}
 
-	public static long getTotalTodoUrlNumber() {
+	public static long getTotalTodoUrlNumber() throws UnsupportedEncodingException {
 		return TaskScheduleManager.getTodoTaskSize();
 	}
 
@@ -85,13 +87,17 @@ public class MonitorManager {
 				}
 				StringBuilder stringBuilder = new StringBuilder();
 				stringBuilder.append("\n");
-				stringBuilder.append("一共采集了" + totalNewsEntityNumber + "条数据");
+				stringBuilder.append("一共采集了" + totalJDGoodsEntityNumber + "条数据");
 				stringBuilder.append("\n");
 				stringBuilder.append("今天一共采集了" + totalCurrentDayEntityNumber + "条数据");
 				stringBuilder.append("\n");
 				stringBuilder.append("已采集完成URL任务" + getTotalDoneUrlNumber() + "个");
 				stringBuilder.append("\n");
-				stringBuilder.append("带采集URL任务" + getTotalTodoUrlNumber() + "个");
+				try {
+					stringBuilder.append("带采集URL任务" + getTotalTodoUrlNumber() + "个");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 				logger.info(stringBuilder.toString());
 			}
 		}

@@ -1,6 +1,7 @@
 #这是我的种子配置文件,请按配置添加
-中国青年网-国内新闻-第1页	http://news.youth.cn/gn/
-中国青年网-国内新闻-第2页	http://news.youth.cn/gn/index_1.htm
-中国青年网-国内新闻-第3页	http://news.youth.cn/gn/index_2.htm
-中国青年网-国内新闻-第4页	http://news.youth.cn/gn/index_3.htm
-中国青年网-国内新闻-第5页	http://news.youth.cn/gn/index_4.htm
+#中国青年网-国内新闻-第1页	http://news.youth.cn/gn/
+#中国青年网-国内新闻-第2页	http://news.youth.cn/gn/index_1.htm
+#中国青年网-国内新闻-第3页	http://news.youth.cn/gn/index_2.htm
+#中国青年网-国内新闻-第4页	http://news.youth.cn/gn/index_3.htm
+#中国青年网-国内新闻-第5页	http://news.youth.cn/gn/index_4.htm
+京东商城-手机商品	https://search.jd.com/Search?keyword=手机&enc=utf-8&qrst=1&rt=1&stop=1&vt=2&cid2=653&cid3=655&page=()&s=1&click=0

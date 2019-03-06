@@ -75,7 +75,7 @@ public class UrlTaskPojo implements Serializable {
 	}
 
 	public String uniqString() {
-		return this.title + this.url;
+		return this.url;
 	}
 
 }

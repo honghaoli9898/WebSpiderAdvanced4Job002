@@ -5,29 +5,15 @@
 	<artifactId>WebSpiderAdvanced4Job002</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<!-- 配置maven多环境属性,方便灵活打包 -->
-	<profiles>
-		<profile>
-			<id>master</id>
-			<properties>
-				<env>master</env>
-				<ant-properties-path>src/main/resources/conf/master/jdbc.properties</ant-properties-path>
-				<ant-properties-path-2>src/main/resources/conf/master/spider.properties</ant-properties-path-2>
-				<ant-properties-path-3>src/main/resources/conf/master/log4j.properties</ant-properties-path-3>
-			</properties>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-		</profile>
-		<profile>
-			<id>slave</id>
-			<properties>
-				<env>slave</env>
-				<ant-properties-path>src/main/resources/conf/slave/jdbc.properties</ant-properties-path>
-				<ant-properties-path-2>src/main/resources/conf/slave/spider.properties</ant-properties-path-2>
-				<ant-properties-path-3>src/main/resources/conf/slave/log4j.properties</ant-properties-path-3>
-			</properties>
-		</profile>
-	</profiles>
+	<!-- <profiles> <profile> <id>master</id> <properties> <env>master</env> 
+		<ant-properties-path>src/main/resources/conf/master/jdbc.properties</ant-properties-path> 
+		<ant-properties-path-2>src/main/resources/conf/master/spider.properties</ant-properties-path-2> 
+		<ant-properties-path-3>src/main/resources/conf/master/log4j.properties</ant-properties-path-3> 
+		</properties> <activation> <activeByDefault>true</activeByDefault> </activation> 
+		</profile> <profile> <id>slave</id> <properties> <env>slave</env> <ant-properties-path>src/main/resources/conf/slave/jdbc.properties</ant-properties-path> 
+		<ant-properties-path-2>src/main/resources/conf/slave/spider.properties</ant-properties-path-2> 
+		<ant-properties-path-3>src/main/resources/conf/slave/log4j.properties</ant-properties-path-3> 
+		</properties> </profile> </profiles> -->
 
 	<!-- 仓库源 -->
 	<repositories>
@@ -38,6 +24,18 @@
 		</repository>
 	</repositories>
 	<dependencies>
+	<!-- +++|selenium|+++ -->
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>3.5.1</version>
+		</dependency>
+		<!-- +++|phantomjsdriver|+++ -->
+		<dependency>
+			<groupId>com.github.detro.ghostdriver</groupId>
+			<artifactId>phantomjsdriver</artifactId>
+			<version>1.1.0</version>
+		</dependency>
 		<!--httpcline-4.5.2依赖 -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -45,12 +43,10 @@
 			<version>4.5.2</version>
 		</dependency>
 
-		<!-- 引入 hadoop-cli-2.7.4 依赖 -->
 		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-client</artifactId>
-			<version>2.7.4</version>
-			<scope>provided</scope>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.15</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -58,11 +54,8 @@
 			<version>2.0.1</version>
 		</dependency>
 		<!-- 引入log4j 1.2.17依赖 -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
+		<!-- <dependency> <groupId>log4j</groupId> <artifactId>log4j</artifactId> 
+			<version>1.2.17</version> </dependency> -->
 		<!-- 引入mysql-connection-java-5.1.44依赖 -->
 		<dependency>
 			<groupId>mysql</groupId>
@@ -81,27 +74,54 @@
 			<artifactId>jedis</artifactId>
 			<version>2.8.2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>transport</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.7</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.25</version>
+			<!-- <scope>test</scope> -->
+		</dependency>
+		<dependency>
+			<groupId>io.searchbox</groupId>
+			<artifactId>jest</artifactId>
+			<version>6.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.13.Final</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>WebSpiderAdvanced4Job002</finalName>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<excludes>
-					<exclude>jdbc.properties</exclude> <exclude>spider.properties</exclude>
-					<exclude>jdbc.properties</exclude> <exclude>jdbc.properties</exclude>
-					<exclude>jdbc.properties</exclude> <exclude>log4j.properties</exclude>
-				</excludes>
-			</resource>
-		</resources>
+		<!-- <resources> <resource> <directory>src/main/resources</directory> <excludes> 
+			<exclude>jdbc.properties</exclude> <exclude>spider.properties</exclude> <exclude>jdbc.properties</exclude> 
+			<exclude>jdbc.properties</exclude> <exclude>jdbc.properties</exclude> <exclude>log4j.properties</exclude> 
+			</excludes> </resource> </resources> -->
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
 
@@ -116,16 +136,11 @@
 						<goals>
 							<goal>run</goal>
 						</goals>
-						<configuration>
-							<tasks>
-								<copy file="${ant-properties-path}" overwrite="true"
-									tofile="${project.build.directory}/jdbc.properties" />
-								<copy file="${ant-properties-path-2}" overwrite="true"
-									tofile="${project.build.directory}/spider.properties" />
-								<copy file="${ant-properties-path-3}" overwrite="true"
-									tofile="${project.build.directory}/log4j.properties" />
-							</tasks>
-						</configuration>
+						<!-- <configuration> <tasks> <copy file="${ant-properties-path}" overwrite="true" 
+							tofile="${project.build.directory}/jdbc.properties" /> <copy file="${ant-properties-path-2}" 
+							overwrite="true" tofile="${project.build.directory}/spider.properties" /> 
+							<copy file="${ant-properties-path-3}" overwrite="true" tofile="${project.build.directory}/log4j.properties" 
+							/> </tasks> </configuration> -->
 					</execution>
 				</executions>
 			</plugin>
