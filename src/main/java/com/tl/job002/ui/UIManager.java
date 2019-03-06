@@ -88,7 +88,10 @@ public class UIManager {
 							.getValue().getGoodsSKU(), commentUrl,
 							TaskTypeEnum.CRAWL_TASK);
 					if (!TaskScheduleManager
-							.isInsaveSeedUrlSet(urlSecondTaskPojo)) {
+							.isInsaveSeedUrlSet(urlSecondTaskPojo)
+							&& !TaskScheduleManager
+									.isInSaveJDCommentsUrlSet(urlSecondTaskPojo
+											.uniqString())) {
 						urlTaskPojoList.add(urlSecondTaskPojo);
 						TaskScheduleManager.addJDGoodsEntriyMap(url);
 					}
@@ -96,7 +99,8 @@ public class UIManager {
 			}
 			// 将root种子解析出来的二级任务对象加入任务管理器
 			TaskScheduleManager.addUrlPojoList(urlTaskPojoList);
-			logger.info("当前的todoJDGoodsEntriySize()=" + TaskScheduleManager.getToDoJDGoodsSize());
+			logger.info("当前的todoJDGoodsEntriySize()="
+					+ TaskScheduleManager.getToDoJDGoodsSize());
 		}
 	}
 

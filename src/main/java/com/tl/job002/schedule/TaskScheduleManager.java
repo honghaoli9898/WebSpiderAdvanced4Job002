@@ -39,7 +39,7 @@ public class TaskScheduleManager {
 	// redis中以解析的商品评论set结构key声明
 	public static String uniqGoodsCommentSetKey = "uniq_goods_comment_key";
 	// redis中与todoTaskPojoSet对应的set结构的key声明
-	public static String todoTaskPojoSetKey = "todo_task_pojo_Set_key";
+	public static String todoTaskPojoSetKey = "to_do_task_pojo_set_key";
 	// redis中与todoJDGoodsEntriyMap对应的map结构声明
 	public static String todoJDGoodsEntriyMapKey = "to_do_jd_goods_map_key";
 	// redis中与todoJDCommentEntriyList对应的key声明
@@ -174,7 +174,7 @@ public class TaskScheduleManager {
 			List<JDGoodsCommentsEntriy> jdGoodsCommentsEntriyList)
 			throws IOException {
 		for (JDGoodsCommentsEntriy jdGoodsCommentsEntriy : jdGoodsCommentsEntriyList) {
-			if (isInSaveJDCommentSet(jdGoodsCommentsEntriy)) {
+			if (!isInSaveJDCommentSet(jdGoodsCommentsEntriy)) {
 				addOneJDCommentEntriy(jdGoodsCommentsEntriy);
 			}
 		}
@@ -204,9 +204,7 @@ public class TaskScheduleManager {
 			throws IOException {
 		// 分布式后,将该直接进程的对象,转换为redis list操作
 		for (UrlTaskPojo taskPojo : todoAddTaskList) {
-			if (!isInSaveJDCommentsUrlSet(taskPojo.uniqString())) {
-				addOneUrlPojo(taskPojo);
-			}
+			addOneUrlPojo(taskPojo);
 		}
 		logger.info("当前的todoTaskPojoList.size()=" + getTodoTaskSize());
 	}

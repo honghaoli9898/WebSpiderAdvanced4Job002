@@ -87,9 +87,9 @@ public class MonitorManager {
 				}
 				StringBuilder stringBuilder = new StringBuilder();
 				stringBuilder.append("\n");
-				stringBuilder.append("一共采集了" + totalJDGoodsEntityNumber + "条数据");
+				stringBuilder.append("一共存储了" + totalJDGoodsEntityNumber + "个商品信息");
 				stringBuilder.append("\n");
-				stringBuilder.append("今天一共采集了" + totalCurrentDayEntityNumber + "条数据");
+				stringBuilder.append("今天一共存储了" + totalCurrentDayEntityNumber + "个商品信息");
 				stringBuilder.append("\n");
 				stringBuilder.append("已采集完成URL任务" + getTotalDoneUrlNumber() + "个");
 				stringBuilder.append("\n");

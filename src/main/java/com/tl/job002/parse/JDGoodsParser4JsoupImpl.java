@@ -98,25 +98,28 @@ public class JDGoodsParser4JsoupImpl implements JDGoodsParseInterface {
 		List<JDGoodsCommentsEntriy> jdGoodsCommentsEntriyList = new ArrayList<JDGoodsCommentsEntriy>();
 		Map<String, String> kvMap = new HashMap<String, String>();
 		JSONObject jsonComment = JSON.parseObject(htmlSource);
-		// 晒图数量
-		JSONObjectUtil
-				.getJSONObjectValues(kvMap, jsonComment, "imageListCount");
-		// 得到评论汇总信息
-		JSONObject productCommentSummary = (JSONObject) jsonComment
-				.get("productCommentSummary");
-		String[] args = { "skuId", "commentCountStr", "goodRateShow",
-				"goodCountStr", "generalCountStr", "poorCountStr",
-				"videoCountStr", "afterCountStr" };
-		JSONObjectUtil.getJSONObjectValues(kvMap, productCommentSummary, args);
-		jdGoodsEntriy.setAttribute(jdGoodsEntriy, kvMap, args);
-		jdGoodsEntriy.setImageListCount(kvMap.get("imageListCount"));
-		jdGoodsEntriy.setInsertDate(DateUtil.getDate());
-		try {
-			TaskScheduleManager.addCompleteGoods(jdGoodsEntriy);
-			logger.info("商品skuID" + jdGoodsEntriy.getGoodsSKU()
-					+ "的完整信息以推送到redis");
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (jdGoodsEntriy.getCommentTypeArrayStr() == null) {
+			// 晒图数量
+			JSONObjectUtil.getJSONObjectValues(kvMap, jsonComment,
+					"imageListCount");
+			// 得到评论汇总信息
+			JSONObject productCommentSummary = (JSONObject) jsonComment
+					.get("productCommentSummary");
+			String[] args = { "skuId", "commentCountStr", "goodRateShow",
+					"goodCountStr", "generalCountStr", "poorCountStr",
+					"videoCountStr", "afterCountStr" };
+			JSONObjectUtil.getJSONObjectValues(kvMap, productCommentSummary,
+					args);
+			jdGoodsEntriy.setAttribute(jdGoodsEntriy, kvMap, args);
+			jdGoodsEntriy.setImageListCount(kvMap.get("imageListCount"));
+			jdGoodsEntriy.setInsertDate(DateUtil.getDate());
+			try {
+				TaskScheduleManager.addCompleteGoods(jdGoodsEntriy);
+				logger.info("商品skuID" + jdGoodsEntriy.getGoodsSKU()
+						+ "的完整信息以推送到redis");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		// 得到商品评论类型
 		JSONArray jsonArray = jsonComment

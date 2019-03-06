@@ -1,8 +1,6 @@
 package com.tl.job002.utils;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
 
 import redis.clients.jedis.Jedis;
 

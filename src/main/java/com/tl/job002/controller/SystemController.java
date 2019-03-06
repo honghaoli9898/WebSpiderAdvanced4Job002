@@ -13,14 +13,16 @@ import org.apache.log4j.PropertyConfigurator;
 import com.tl.job002.download.DownloadManager;
 import com.tl.job002.monitor.MonitorManager;
 import com.tl.job002.persistence.DataPersistManager;
+import com.tl.job002.schedule.TaskScheduleManager;
 import com.tl.job002.ui.UIManager;
 import com.tl.job002.utils.SystemConfigParas;
 
 public class SystemController {
 	// 将log4j配置文件放到jar包外面的路径更新
-	/*static {
-		PropertyConfigurator.configure(System.getProperty("user.dir") + File.separator + "log4j.properties");
-	}*/
+	/*
+	 * static { PropertyConfigurator.configure(System.getProperty("user.dir") +
+	 * File.separator + "log4j.properties"); }
+	 */
 	// 添加日志功能
 	public static Logger logger = Logger.getLogger(SystemController.class);
 
@@ -32,17 +34,23 @@ public class SystemController {
 			int circleCounter = 1;
 			// 启动系统监控管理器
 			MonitorManager.start();
-			//启动persist持久化管理器
-			DataPersistManager.start();
+			// 启动persist持久化管理器
+			// DataPersistManager.start();
 			// 主节点
 			while (true) {
-				logger.info("第" + circleCounter + "轮添加种子任务开始");
-				UIManager.parseSeedUrlsTaskToSchedule();
-				logger.info("第" + circleCounter + "轮添加种子任务结束");
-				circleCounter++;
-				logger.info("即将休息" + SystemConfigParas.add_seed_time_one_circle / 1000 + "秒");
-				Thread.sleep(SystemConfigParas.add_seed_time_one_circle);
-				logger.info("休息结束");
+				if (TaskScheduleManager.getSavedJDGoodsUrlSetSize() == 0) {
+					logger.info("第" + circleCounter + "轮添加种子任务开始");
+					UIManager.parseSeedUrlsTaskToSchedule();
+					logger.info("第" + circleCounter + "轮添加种子任务结束");
+					circleCounter++;
+					logger.info("即将休息"
+							+ SystemConfigParas.add_seed_time_one_circle / 1000
+							+ "秒");
+					Thread.sleep(SystemConfigParas.add_seed_time_one_circle);
+					logger.info("休息结束");
+				}else{
+					Thread.sleep(SystemConfigParas.add_seed_time_one_circle);
+				}
 			}
 		} else {
 			logger.info("即将开启slave子节点!");
