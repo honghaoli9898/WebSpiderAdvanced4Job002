@@ -12,6 +12,17 @@ import java.util.regex.Pattern;
  * @date 2018年11月7日
  */
 public class RegexUtil {
+	public static List<String> getMatchTextList(String input, String regex,
+			int groupNum) {
+		List<String> list = new ArrayList<String>();
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(input);
+		while (matcher.find()) {
+			list.add(matcher.group(groupNum));
+		}
+		return list;
+	}
+
 	public static String getMatchText(String input, String regex, int groupNum) {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(input);

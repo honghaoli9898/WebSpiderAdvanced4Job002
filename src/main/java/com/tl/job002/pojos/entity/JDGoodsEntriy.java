@@ -54,6 +54,12 @@ public class JDGoodsEntriy implements Serializable {
 	}
 
 	public JDGoodsEntriy() {
+
+	}
+
+	public void setAttribute(JDGoodsEntriy jdGoodsEntriy,
+			Map<String, String> map, String... args) {
+		List<String> allAttributeList = new ArrayList<String>();
 		allAttributeList.add("afterCountStr");
 		allAttributeList.add("commentCountStr");
 		allAttributeList.add("goodCountStr");
@@ -61,12 +67,6 @@ public class JDGoodsEntriy implements Serializable {
 		allAttributeList.add("generalCountStr");
 		allAttributeList.add("poorCountStr");
 		allAttributeList.add("videoCountStr");
-	}
-
-	public static List<String> allAttributeList = new ArrayList<String>();
-
-	public void setAttribute(JDGoodsEntriy jdGoodsEntriy,
-			Map<String, String> map, String... args) {
 		for (String attribute : args) {
 			if (allAttributeList.contains(attribute)) {
 				int attrIndex = allAttributeList.indexOf(attribute);

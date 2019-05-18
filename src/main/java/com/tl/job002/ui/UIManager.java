@@ -28,7 +28,8 @@ public class UIManager {
 	// 实例化一个网页下载接口实现类httpcline下载模式
 	public static WebPageDownloadUtil4ChromeDriver downloadInterface = new WebPageDownloadUtil4ChromeDriver();
 	static {
-		downloadInterface.setWebDriver(WebDriverUtil.createWebDriver(false));
+		downloadInterface.setWebDriver(WebDriverUtil.createWebDriver(false,
+				true));
 	}
 	public static Logger logger = Logger.getLogger(UIManager.class);
 

@@ -126,7 +126,8 @@ public class DataPersisRunnable implements Runnable {
 			// 对数据监控管理器进行打点上报数据
 			// 因为历史统计,也是基于当天的,故打点上报当天后,上报历史
 			MonitorManager.addJDGoodsNumber4CurrentDay(1);
-			TaskScheduleManager.addSavedJDGoodsSet(jdGoods.getGoodsSKU());;
+			TaskScheduleManager.addSavedJDGoodsSet(jdGoods.getGoodsSKU());
+			;
 			return true;
 		}
 		return false;

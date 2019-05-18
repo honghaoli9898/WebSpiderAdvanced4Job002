@@ -1,5 +1,7 @@
 package com.tl.job002.utils;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,7 +43,7 @@ public class WebPageDownloadUtil4ChromeDriver {
 			WebDriverUtil.service.stop();
 			if (SystemConfigParas.is_setting_proxy.equals("true")) {
 				while (temp == 1) {
-					webDriver = WebDriverUtil.createWebDriver(true);
+					webDriver = WebDriverUtil.createWebDriver(true, true);
 					logger.info(url + "切换模式1成功，这是第"
 							+ TaskScheduleManager.getProxyIpPoolListSize()
 							+ "次切换。");
@@ -70,7 +72,7 @@ public class WebPageDownloadUtil4ChromeDriver {
 				temp = 2;
 			}
 			while (temp == 2) {
-				webDriver = WebDriverUtil.createWebDriver(false);
+				webDriver = WebDriverUtil.createWebDriver(false, false);
 				logger.info(url + "切换模式2成功，这是第"
 						+ TaskScheduleManager.getUserNameListSize() + "次切换。");
 				status = jdSimulationLogin();
@@ -96,14 +98,23 @@ public class WebPageDownloadUtil4ChromeDriver {
 						}
 					}
 				} else {
-					logger.info(url + "访问登录界面状态值不为200,即将切换模式3");
-					temp = 3;
-					TaskScheduleManager.cleanUserNameList();
+					if (TaskScheduleManager.getUserNameListSize() == SystemConfigParas.login_user_name
+							.size()) {
+						logger.info(url + "所有登陆均不成功,即将切换模式3");
+						temp = 3;
+						TaskScheduleManager.cleanUserNameList();
+					}
 				}
 			}
 			if (SystemConfigParas.is_setting_proxy.equals("true")) {
 				while (temp == 3) {
-					webDriver = WebDriverUtil.createWebDriver(true);
+					isChangeUserName = false;
+					if (TaskScheduleManager.getProxyIpPoolListSize() == SystemConfigParas.proxy_ip_pool
+							.size()) {
+						isChangeUserName = true;
+						isFirstChange = false;
+					}
+					webDriver = WebDriverUtil.createWebDriver(true, false);
 					logger.info(url + "切换模式3成功");
 					status = jdSimulationLogin();
 					if (status.equals("200")) {
@@ -120,12 +131,17 @@ public class WebPageDownloadUtil4ChromeDriver {
 								e.printStackTrace();
 							}
 						} else {
-							if (TaskScheduleManager.getUserNameListSize() == StaticValue.maxListSize
-									|| TaskScheduleManager
-											.getProxyIpPoolListSize() == StaticValue.maxListSize) {
+							if (TaskScheduleManager.getUserNameListSize() == SystemConfigParas.login_user_name
+									.size()
+									&& TaskScheduleManager
+											.getProxyIpPoolListSize() == SystemConfigParas.proxy_ip_pool
+													.size()) {
 								temp = 1;
-								webDriver = WebDriverUtil
-										.createWebDriver(false);
+								isChangeUserName = true;
+								isFirstChange = true;
+								webDriver = WebDriverUtil.createWebDriver(
+										false, true);
+								
 								TaskScheduleManager.cleanUserNameList();
 								TaskScheduleManager.cleanProxyIpPoolList();
 							}
@@ -133,15 +149,20 @@ public class WebPageDownloadUtil4ChromeDriver {
 					} else {
 						logger.info(url + "模式3登录页状态值非200即将切换ip");
 						if (TaskScheduleManager.getProxyIpPoolListSize() == SystemConfigParas.proxy_ip_pool
-								.size()) {
+								.size()&&TaskScheduleManager.getUserNameListSize() == SystemConfigParas.login_user_name
+										.size()) {
 							logger.info(url + "在模式3中登录时切换了所有ip,即将退出下载");
 							temp = 1;
-							webDriver = WebDriverUtil.createWebDriver(false);
+							isChangeUserName = true;
+							isFirstChange = true;
+							webDriver = WebDriverUtil.createWebDriver(false,
+									true);
 							TaskScheduleManager.cleanProxyIpPoolList();
 						}
 					}
 				}
 			} else {
+				logger.info("未设置代理模式");
 				temp = 1;
 			}
 		}
@@ -151,6 +172,7 @@ public class WebPageDownloadUtil4ChromeDriver {
 	public static void slideDown(WebDriver webDriver) {
 
 		try {
+			Thread.sleep(5000);
 			((JavascriptExecutor) webDriver)
 					.executeScript("window.scrollTo(0,document.body.scrollHeight/2)");
 			Thread.sleep(5000);
@@ -165,7 +187,8 @@ public class WebPageDownloadUtil4ChromeDriver {
 	public static int locationNum = 0;
 
 	// 延时输入
-	public static synchronized void delayInput(WebElement webElement, int flag) {
+	public static synchronized void delayInput(WebElement webElement, int flag,
+			boolean isChangeUserName, boolean isFirstChange) {
 		if (TaskScheduleManager.isNull4UserNameList()
 				|| TaskScheduleManager.getUserNameListSize() == SystemConfigParas.login_user_name
 						.size()) {
@@ -175,9 +198,20 @@ public class WebPageDownloadUtil4ChromeDriver {
 		String sendKey = null;
 		switch (flag) {
 		case 0:
-			sendKey = SystemConfigParas.login_user_name.get(locationNum);
-			TaskScheduleManager.addUserNameList(sendKey);
-			locationNum++;
+			if (isChangeUserName) {
+				sendKey = SystemConfigParas.login_user_name.get(locationNum);
+				if (isFirstChange) {
+					locationNum++;
+					TaskScheduleManager.addUserNameList(sendKey);
+				}
+			} else {
+				sendKey = SystemConfigParas.login_user_name.get(locationNum);
+				if (TaskScheduleManager.getProxyIpPoolListSize() == SystemConfigParas.proxy_ip_pool
+						.size()) {
+					TaskScheduleManager.addUserNameList(sendKey);
+					locationNum++;
+				}
+			}
 			break;
 		case 1:
 			sendKey = SystemConfigParas.login_password.get(locationNum);
@@ -195,8 +229,17 @@ public class WebPageDownloadUtil4ChromeDriver {
 		}
 	}
 
+	public boolean isChangeUserName = true;
+	public boolean isFirstChange = true;
+
 	// 登录
 	public String jdSimulationLogin() {
+		List<BufferedImage> localImageList = null;
+		try {
+			localImageList = SiderUtil.getLocalALLImage("pugins/images");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		webDriver.get(SystemConfigParas.jd_login_url);
 		String status = WebDriverUtil.getPagStatus(webDriver);
 		if (status.equals("200")) {
@@ -214,19 +257,63 @@ public class WebPageDownloadUtil4ChromeDriver {
 						.xpath("//*[@id=\"nloginpwd\"]"));
 				WebElement submit = webDriver.findElement(By
 						.xpath("//*[@id=\"loginsubmit\"]"));
-				delayInput(username, 0);
-				delayInput(password, 1);
+				username.clear();
+				delayInput(username, 0, isChangeUserName, isFirstChange);
+				delayInput(password, 1, isChangeUserName, isFirstChange);
 				submit.click();
 				Thread.sleep(2000);
-				String title = webDriver.getTitle();
-				logger.info("正在判断主页title是否为京东页面");
-				while (!title.equals(SystemConfigParas.jd_search_title)) {
-					title = webDriver.getTitle();
-					logger.info("title与京东主页title不同即将休息5秒----------");
-					Thread.sleep(5000);
-					logger.info("休息结束----------继续判断title");
+				if (webDriver.getTitle().equals(
+						SystemConfigParas.jd_search_title)) {
+					logger.info("账号"
+							+ TaskScheduleManager.getLastListForUserNameList()
+							+ "登陆成功");
+				} else {
+					// 选中滑块按钮
+					By moveBtn = By
+							.cssSelector(".JDJRV-slide-inner.JDJRV-slide-btn");// 滑动验证按钮
+					SiderUtil.waitForLoad(webDriver, moveBtn);
+					WebElement moveElemet = webDriver.findElement(moveBtn);
+					int i = 0;
+					while (i < 5) {
+						try {
+							// 得到带补全的缺口图片 京东的图片是base64编码的 所以有个base64的解码工具类还原图片
+							BufferedImage gapImage = SiderUtil
+									.getGapImage(webDriver);
+							// 将图片与本地图片对比找到相似度最大的图片即为该图片的完整图片
+
+							BufferedImage similarImage = SiderUtil
+									.getSimilarImage(gapImage, localImageList);
+
+							// 得到移动距离
+							int distance = SiderUtil.getSliceOffset(gapImage,
+									similarImage);
+							// 由于下载的图片比网页图片格式要大 根据推算 图片的拉伸长度为0.7222倍
+							distance = (int) (distance * 0.77222);
+							System.out.println("得到移动距离" + distance * 0.77222);
+							// 按照加速度移动图片
+							SiderUtil.move(webDriver, moveElemet, distance);
+							Thread.sleep(4000);
+							if (webDriver.getTitle().equals(
+									SystemConfigParas.jd_search_title)) {
+								logger.info("账号"
+										+ TaskScheduleManager
+												.getLastListForUserNameList()
+										+ "登陆成功");
+								break;
+							}
+							if (i == 4) {
+								status = "-1";
+								logger.info("账号"
+										+ TaskScheduleManager
+												.getLastListForUserNameList()
+										+ "登陆失败");
+							}
+							i++;
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
 				}
-				logger.info("登录成功");
 				int sleepTime = RandomNumberUtil.getRandomNumber();
 				logger.info("即将休息" + sleepTime / 1000 + "秒-----------");
 				Thread.sleep(sleepTime);
@@ -248,7 +335,7 @@ public class WebPageDownloadUtil4ChromeDriver {
 			String url = "https://search.jd.com/Search?keyword=手机&enc=utf-8&qrst=1&rt=1&stop=1&vt=2&cid2=653&cid3=655&page=1&s=1&click=0";
 			String commentUrl = "https://sclub.jd.com/comment/productPageComments.action?&productId=()&score=0&sortType=5&page=0&pageSize=10";
 			webPageDownloadUtil4ChromeDriver.setWebDriver(WebDriverUtil
-					.createWebDriver(false));
+					.createWebDriver(false, true));
 			webPageDownloadUtil4ChromeDriver.jdSimulationLogin();
 			String htmlSource = webPageDownloadUtil4ChromeDriver.download(url);
 			if (htmlSource == null) {

@@ -35,10 +35,10 @@ public class SystemController {
 			// 启动系统监控管理器
 			MonitorManager.start();
 			// 启动persist持久化管理器
-			// DataPersistManager.start();
+			DataPersistManager.start();
 			// 主节点
 			while (true) {
-				if (TaskScheduleManager.getSavedJDGoodsUrlSetSize() == 0) {
+				if (TaskScheduleManager.getTodoTaskSize() <= 2) {
 					logger.info("第" + circleCounter + "轮添加种子任务开始");
 					UIManager.parseSeedUrlsTaskToSchedule();
 					logger.info("第" + circleCounter + "轮添加种子任务结束");
@@ -48,7 +48,7 @@ public class SystemController {
 							+ "秒");
 					Thread.sleep(SystemConfigParas.add_seed_time_one_circle);
 					logger.info("休息结束");
-				}else{
+				} else {
 					Thread.sleep(SystemConfigParas.add_seed_time_one_circle);
 				}
 			}

@@ -78,7 +78,8 @@ public class WebpageDownloadUtil4HttpClient implements DownloadInterface {
 
 	public static void main(String[] args) throws Exception {
 		// String url = "http://www.sohu.com";
-		String url = "http://news.youth.cn/gn";
+//		String url = "http://news.youth.cn/gn";
+		String url = "http://www.hsts.gov.cn/ztzl/xyts/xzxkz/201811/P020181130642382396277.pdf";
 		// String url = "http://www.baidu.com";
 		// String url = "http://www.qq.com";
 		// String url = "http://www.163.com";

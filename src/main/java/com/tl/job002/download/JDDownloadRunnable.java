@@ -26,7 +26,8 @@ public class JDDownloadRunnable implements Runnable {
 	@Override
 	public void run() {
 		WebPageDownloadUtil4ChromeDriver downloadInterface = new WebPageDownloadUtil4ChromeDriver();
-		downloadInterface.setWebDriver(WebDriverUtil.createWebDriver(false));
+		downloadInterface.setWebDriver(WebDriverUtil.createWebDriver(false,
+				false));
 		while (enableRunning) {
 			UrlTaskPojo taskPojo;
 			try {
@@ -37,16 +38,20 @@ public class JDDownloadRunnable implements Runnable {
 					String htmlSource = downloadInterface.download(taskPojo
 							.getUrl());
 					if (htmlSource != null) {
-							TaskScheduleManager.addSavedJDCommentsUrlSet(taskPojo.getUrl());;
-							List<JDGoodsCommentsEntriy> jdGoodsCommentsEntriyList = HtmlParserManager
-									.parserHtmlSource(htmlSource, taskPojo);
-							TaskScheduleManager.addJDCommentEntriyList(jdGoodsCommentsEntriyList);
-							logger.info("商品skuID"+taskPojo.getTitle()+"评论信息以回传给redis");
+						TaskScheduleManager.addSavedJDCommentsUrlSet(taskPojo
+								.getUrl());
+						List<JDGoodsCommentsEntriy> jdGoodsCommentsEntriyList = HtmlParserManager
+								.parserHtmlSource(htmlSource, taskPojo);
+						TaskScheduleManager
+								.addJDCommentEntriyList(jdGoodsCommentsEntriyList);
+						logger.info("商品skuID" + taskPojo.getTitle()
+								+ "评论信息以回传给redis");
 					} else {
 						// 如果htmlSource==null,代表下载出错了
 						logger.error(this.name + "所有下载方法已尝试完毕,该任务为="
 								+ taskPojo.getUrl());
-						TaskScheduleManager.addOneUrlPojo(taskPojo);;
+						TaskScheduleManager.addOneUrlPojo(taskPojo);
+						;
 						try {
 							logger.info("-----------即将休息2个小时-----------");
 							Thread.sleep(7200000);

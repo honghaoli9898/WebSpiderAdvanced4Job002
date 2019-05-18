@@ -46,6 +46,6 @@ public class DateUtil {
 		return formatDateToStringYearMonthDay(DateUtil.getDate());
 	}
 	public static void main(String[] args) {
-		System.out.println(getCurrentDay());
+		System.out.println(formatDateToString(getDate()));
 	}
 }

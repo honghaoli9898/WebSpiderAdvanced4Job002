@@ -98,6 +98,7 @@ public class JDGoodsParser4JsoupImpl implements JDGoodsParseInterface {
 		List<JDGoodsCommentsEntriy> jdGoodsCommentsEntriyList = new ArrayList<JDGoodsCommentsEntriy>();
 		Map<String, String> kvMap = new HashMap<String, String>();
 		JSONObject jsonComment = JSON.parseObject(htmlSource);
+		JSONArray jsonArray = null;
 		if (jdGoodsEntriy.getCommentTypeArrayStr() == null) {
 			// 晒图数量
 			JSONObjectUtil.getJSONObjectValues(kvMap, jsonComment,
@@ -113,31 +114,36 @@ public class JDGoodsParser4JsoupImpl implements JDGoodsParseInterface {
 			jdGoodsEntriy.setAttribute(jdGoodsEntriy, kvMap, args);
 			jdGoodsEntriy.setImageListCount(kvMap.get("imageListCount"));
 			jdGoodsEntriy.setInsertDate(DateUtil.getDate());
+
+			// 得到商品评论类型
+			jsonArray = jsonComment.getJSONArray("hotCommentTagStatistics");
+			JSONArray commentTypeArray = new JSONArray();
+			for (Object object : jsonArray) {
+				JSONObject commentObject = new JSONObject();
+				JSONObject jsonObject = (JSONObject) object;
+				// 评论类型
+				String commentType = jsonObject.getString("name");
+				// 对应次数
+				String commentCount = jsonObject.getString("count");
+				commentObject.put(commentType, commentCount);
+				commentTypeArray.add(commentObject);
+			}
+			jdGoodsEntriy.setCommentTypeArrayStr(commentTypeArray
+					.toJSONString());
+			System.out.println(jdGoodsEntriy.toString());
+			logger.info("解析商品" + jdGoodsEntriy.getGoodsSKU() + "完成");
+			logger.info("即将解析评论");
 			try {
 				TaskScheduleManager.addCompleteGoods(jdGoodsEntriy);
+				TaskScheduleManager
+						.deleteOneDiscomplementGoodsEntriy(jdGoodsEntriy
+								.getGoodsSKU());
 				logger.info("商品skuID" + jdGoodsEntriy.getGoodsSKU()
 						+ "的完整信息以推送到redis");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		// 得到商品评论类型
-		JSONArray jsonArray = jsonComment
-				.getJSONArray("hotCommentTagStatistics");
-		JSONArray commentTypeArray = new JSONArray();
-		for (Object object : jsonArray) {
-			JSONObject commentObject = new JSONObject();
-			JSONObject jsonObject = (JSONObject) object;
-			// 评论类型
-			String commentType = jsonObject.getString("name");
-			// 对应次数
-			String commentCount = jsonObject.getString("count");
-			commentObject.put(commentType, commentCount);
-			commentTypeArray.add(commentObject);
-		}
-		jdGoodsEntriy.setCommentTypeArrayStr(commentTypeArray.toJSONString());
-		logger.info("解析商品" + jdGoodsEntriy.getGoodsSKU() + "完成");
-		logger.info("即将解析评论");
 		// 得到评论详情
 		jsonArray = jsonComment.getJSONArray("comments");
 		for (Object object : jsonArray) {
@@ -152,9 +158,12 @@ public class JDGoodsParser4JsoupImpl implements JDGoodsParseInterface {
 			JSONObjectUtil.getJSONObjectValues(kvMap, jsonObject, argsArray);
 			jdGoodsCommentsEntriy.setAttribute(jdGoodsCommentsEntriy, kvMap,
 					argsArray);
+			jdGoodsCommentsEntriy.setItemUrl(jdGoodsCommentsEntriy
+					.getReferenceId());
 			jdGoodsCommentsEntriy.setInsertDate(DateUtil.getDate());
 			jdGoodsCommentsEntriyList.add(jdGoodsCommentsEntriy);
 			kvMap.clear();
+			System.out.println(jdGoodsCommentsEntriy);
 		}
 		logger.info("解析商品评论" + jdGoodsEntriy.getGoodsSKU() + "完成");
 		return jdGoodsCommentsEntriyList;

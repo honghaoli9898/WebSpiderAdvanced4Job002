@@ -1,8 +1,10 @@
 package com.tl.job002.utils;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -19,6 +21,7 @@ import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -29,6 +32,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.tl.job002.schedule.TaskScheduleManager;
 
 public class WebDriverUtil {
+	public static Map<String,Object> prefs ;
+	static{
+		prefs= new HashMap<String,Object>();
+		prefs.put("profile.managed_default_content_settings.images", 2);
+	}
 	public static ChromeDriverService service;
 	public static Logger logger = Logger.getLogger(WebDriverUtil.class);
 
@@ -76,7 +84,7 @@ public class WebDriverUtil {
 	public static int locationNum = 0;
 
 	public static WebDriver createChromeWebDriver(String path,
-			boolean isUseProxy) throws Exception {
+			boolean isUseProxy,boolean isUseImage) throws Exception {
 		if (path == null || "".equals(path)) {
 			throw new Exception("配置错误，没有配置：chrome path");
 		}
@@ -106,7 +114,9 @@ public class WebDriverUtil {
 		setLog(cap);
 		ChromeOptions options = new ChromeOptions();
 		setOptionsArguments(SystemConfigParas.options_arguments, options);
-		// options.addArguments("--proxy-server=http://116.209.56.169:9999");
+		if(isUseImage){
+			options.setExperimentalOption("prefs", prefs);
+		}
 		cap.setCapability(ChromeOptions.CAPABILITY, options);
 
 		System.getProperties().setProperty("webdriver.chrome.driver", path);
@@ -159,11 +169,11 @@ public class WebDriverUtil {
 	/**
 	 * 创建chromedriver实例
 	 */
-	public static WebDriver createWebDriver(boolean isUseProxy) {
+	public static WebDriver createWebDriver(boolean isUseProxy,boolean isUseImage) {
 		WebDriver webDriver = null;
 		try {
 			webDriver = WebDriverUtil.createChromeWebDriver(
-					SystemConfigParas.chrome_driver_path, isUseProxy);
+					SystemConfigParas.chrome_driver_path, isUseProxy,isUseImage);
 		} catch (Exception e) {
 			webDriver.quit();
 			e.printStackTrace();

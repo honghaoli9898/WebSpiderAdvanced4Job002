@@ -8,7 +8,7 @@ public class JSONObjectUtil {
 	public static Map<String, String> getJSONObjectValues(
 			Map<String, String> kvMap, JSONObject jsonObject, String... args) {
 		for (String key : args) {
-			kvMap.put(key, jsonObject.getString(key));
+			kvMap.put(key, jsonObject.getString(key).trim().replace("\n", "。"));
 		}
 		return kvMap;
 	}

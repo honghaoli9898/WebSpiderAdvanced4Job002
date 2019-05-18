@@ -94,11 +94,15 @@ public class IOUtil {
 	// 向文件里追加内容方法A
 	public static synchronized void writeFile(String context, String fileName,
 			boolean isAppend) throws IOException {
+		int temp = 0;
 		FileOutputStream fops = new FileOutputStream(fileName, isAppend);
 		OutputStreamWriter osw = new OutputStreamWriter(fops);
 		BufferedWriter bw = new BufferedWriter(osw);
+		if (temp > 0) {
+			bw.write("\n");
+		}
 		bw.write(context);
-		bw.write("\n");
+		temp++;
 		bw.flush();
 		bw.close();
 	}

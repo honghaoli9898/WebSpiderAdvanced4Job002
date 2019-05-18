@@ -93,4 +93,10 @@ public class SystemConfigParas {
 	public static String db_url = configUtil_db.getValue("db_url");
 	public static String db_username = configUtil_db.getValue("db_username");
 	public static String db_password = configUtil_db.getValue("db_password");
+	public static String es_cluster_name = configUtil_db
+			.getValue("es_cluster_name");
+	public static boolean es_client_transport_sniff = Boolean
+			.getBoolean(configUtil_db.getValue("es_client_transport_sniff"));
+	public static String es_local_name = configUtil_db
+			.getValue("es_local_name");
 }

@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -18,167 +17,273 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.ExistsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 public class TransportClientUtil {
-	// ÉùÃ÷Ò»¸öclient±äÁ¿
-	public TransportClient client = null;
+	public static TransportClient client = null;
 
 	public TransportClientUtil() throws UnknownHostException {
 		init();
 	}
 
-	// ³õÊ¼»¯TransportClient
-	public void init() throws UnknownHostException {
-		/**
-		 * ÅäÖÃÏà¹Ø²ÎÊı£¬ °üÀ¨¼¯ÈºÃû³Æ:±êÊ¶Á´½ÓÄÄ¸öes¼¯Èº ÊÇ·ñ¿ªÆôĞáÌ½ÆäËü¼¯ÈºÈº·şÎñ½ÚµãµÄÄÜÁ¦,Ê¹ĞÂÔö»òÒÆ³ıµÄ¼¯Èº½Úµã×Ô¶¯¸ĞÖªµ½
-		 * ÆäĞáÌ½¹¦ÄÜÊ¹ÓÃĞ§¹û²¢²»ÀíÏë£¬»¹ÊÇÒÔÖ±½ÓÏÔÊ½Ìí¼Ó·şÎñ½Úµã
-		 */
-		Settings settings = Settings.builder().put("cluster.name", "tianliangedu_es_cluster")
-				.put("client.transport.sniff", true).build();
-		// ½«²ÎÊıÓ¦ÓÃµ½Ä³¸öclient¶ÔÏóÖĞ
+	public static void init() throws UnknownHostException {
+		Settings settings = Settings
+				.builder()
+				.put("cluster.name", SystemConfigParas.es_cluster_name)
+				.put("client.transport.sniff",
+						SystemConfigParas.es_client_transport_sniff).build();
 		client = new PreBuiltTransportClient(settings);
-		// ÏÔÊ½Ìí¼ÓÏìÓ¦es¼¯Èº²Ù×÷µÄ½Úµã»úÆ÷£¬×¢ÒâÊÇ9300¹ÜÀí¶Ë¿Ú
-		client.addTransportAddress(new TransportAddress(InetAddress.getByName("DESKTOP-TR9A93O"), 9300));
-	};
+		client.addTransportAddress(new TransportAddress(InetAddress
+				.getByName(SystemConfigParas.es_local_name), 9300));
+	}
 
-	// ´´½¨Ë÷Òı,´«ÈëË÷ÒıÃû³Æ
+	// åˆ›å»ºç´¢å¼•,ä¼ å…¥ç´¢å¼•åç§°
 	public void createIndex(String indexName) {
 		client.admin().indices().prepareCreate(indexName).execute().actionGet();
 	}
 
-	// É¾³ıË÷Òı,´«ÈëË÷ÒıÃû³Æ
+	// åˆ é™¤ç´¢å¼•,ä¼ å…¥ç´¢å¼•åç§°
 	public void deleteIndex(String indexName) {
 		client.admin().indices().prepareDelete(indexName).execute().actionGet();
 	}
 
-	// ´´½¨Êı¾İÀàĞÍ
-	public void createType(String indexName, String typeName) throws IOException {
-		XContentBuilder contentBuilder = XContentFactory.jsonBuilder().startObject().startObject("properties")
-				.startObject("title").field("type", "text").field("analyzer", "index_ansj")
-				.field("search_analyzer", "query_ansj").endObject().startObject("source_url").field("type", "keyword")
-				.endObject().startObject("post_time").field("type", "date").field("format", "yyyy-MM-dd HH:mm:ss")
-				.endObject().startObject("insert_time").field("type", "date").field("format", "yyyy-MM-dd HH:mm:ss")
-				.endObject().endObject().endObject();
-		PutMappingRequest putMappingRequest = Requests.putMappingRequest(indexName).type(typeName)
+	// åˆ›å»ºç±»å‹
+	public void createType4JDComments(String indexName, String typeName)
+			throws IOException {
+		XContentBuilder contentBuilder = XContentFactory.jsonBuilder()
+				.startObject().startObject("properties")
+				.startObject("nickname").field("type", "text")
+				.field("analyzer", "index_ansj")
+				.field("search_analyzer", "query_ansj").endObject()
+				.startObject("userLevelName").field("type", "keyword")
+				.endObject().startObject("userLevelId")
+				.field("type", "keyword").endObject()
+				.startObject("userClientShow").field("type", "keyword")
+				.endObject().startObject("item_url").field("type", "keyword")
+				.endObject().startObject("mobileVersion")
+				.field("type", "keyword").endObject()
+				.startObject("referenceId").field("type", "keyword")
+				.endObject().startObject("score").field("type", "keyword")
+				.endObject().startObject("content").field("type", "text")
+				.field("analyzer", "index_ansj")
+				.field("search_analyzer", "query_ansj").endObject()
+				.startObject("productColor").field("type", "keyword")
+				.endObject().startObject("productSize").field("type", "text")
+				.field("analyzer", "index_ansj")
+				.field("search_analyzer", "query_ansj").endObject()
+				.startObject("referenceTime").field("type", "keyword")
+				.endObject().startObject("creationTime")
+				.field("type", "keyword").endObject().startObject("days")
+				.field("type", "keyword").endObject().startObject("afterDays")
+				.field("type", "keyword").endObject()
+				.startObject("jd_comment_insert_time").field("type", "date")
+				.field("format", "yyyy-MM-dd HH:mm:ss").endObject().endObject()
+				.endObject();
+		PutMappingRequest putMappingRequest = Requests
+				.putMappingRequest(indexName).type(typeName)
 				.source(contentBuilder);
-		this.client.admin().indices().putMapping(putMappingRequest).actionGet();
+		client.admin().indices().putMapping(putMappingRequest).actionGet();
 	}
 
-	/**
-	 * ÏòÖ¸¶¨µÄindexºÍtypeÖĞÌí¼Óµ¥¸öÎÄµµ
-	 *
-	 * @param indexName
-	 * @param typeName
-	 */
-	public void addOneDocument(String indexName, String typeName, Map map) {
-		// ½«Êı¾İ·¢ËÍµ½·şÎñÆ÷¶Ë
-		this.client.prepareIndex(indexName, typeName).setSource(map).execute().actionGet();
+	// åˆ›å»ºç±»å‹
+	public void createType4JDJoods(String indexName, String typeName)
+			throws IOException {
+		XContentBuilder contentBuilder = XContentFactory.jsonBuilder()
+				.startObject().startObject("properties")
+				.startObject("goodsSKU").field("type", "keyword").endObject()
+				.startObject("goodsTitle").field("type", "text")
+				.field("analyzer", "index_ansj")
+				.field("search_analyzer", "query_ansj").endObject()
+				.startObject("goodsName").field("type", "text")
+				.field("analyzer", "index_ansj")
+				.field("search_analyzer", "query_ansj").endObject()
+				.startObject("goodsCommentCount").field("type", "keyword")
+				.endObject().startObject("goodsPrice").field("type", "keyword")
+				.endObject().startObject("goodsStoreInfo")
+				.field("type", "text").field("analyzer", "index_ansj")
+				.field("search_analyzer", "query_ansj").endObject()
+				.startObject("goodsPag").field("type", "keyword").endObject()
+				.startObject("imageListCount").field("type", "keyword")
+				.endObject().startObject("commentCountStr")
+				.field("type", "keyword").endObject()
+				.startObject("goodRateShow").field("type", "keyword")
+				.endObject().startObject("goodCountStr")
+				.field("type", "keyword").endObject()
+				.startObject("generalCountStr").field("type", "keyword")
+				.endObject().startObject("poorCountStr")
+				.field("type", "keyword").endObject()
+				.startObject("videoCountStr").field("type", "keyword")
+				.endObject().startObject("afterCountStr")
+				.field("type", "keyword").endObject()
+				.startObject("commentTypeArrayStr").field("type", "text")
+				.field("analyzer", "index_ansj")
+				.field("search_analyzer", "query_ansj").endObject()
+				.startObject("jd_goods_insert_time").field("type", "date")
+				.field("format", "yyyy-MM-dd HH:mm:ss").endObject().endObject()
+				.endObject();
+		PutMappingRequest putMappingRequest = Requests
+				.putMappingRequest(indexName).type(typeName)
+				.source(contentBuilder);
+		client.admin().indices().putMapping(putMappingRequest).actionGet();
 	}
 
-	/**
-	 * ÅúÁ¿Ìí¼ÓÎÄµµÖÁÄ¿±êË÷ÒıµÄÀàĞÍµ±ÖĞ
-	 *
-	 * @param indexName
-	 * @param typeName
-	 * @return
-	 */
-	public boolean addBatchDocument(String indexName, String typeName) {
-		// Í¨¹ımap¶¨Òåkv½á¹¹Êı¾İ¶ÔÏó
+	// crudå•æ¡æ’å…¥
+	@SuppressWarnings("unchecked")
+	public void addOneDocument(String indexName, String typeName,
+			@SuppressWarnings("rawtypes") Map kvMap) {
+		client.prepareIndex(indexName, typeName).setSource(kvMap).execute()
+				.actionGet();
+	}
+
+	// ä¿®æ”¹
+	public void updateOneDocument(String indexName, String typeName,
+			String docID) {
 		Map<String, String> kvMap = new HashMap<String, String>();
-		kvMap.put("title", "×Ô¶¨ÒåĞÂÎÅ±êÌâ-bulk");
-		kvMap.put("source_url", "×Ô¶¨ÒåĞÂÎÅurl");
-		kvMap.put("post_time", "2018-08-04 12:12:12");
+		kvMap.put("title", "è‡ªå®šä¹‰æ–°é—»æ ‡é¢˜");
+		kvMap.put("source_url", "è‡ªå®šä¹‰æ–°é—»url");
+		kvMap.put("port_time", "2018-08-04 12:12:12");
 		kvMap.put("insert_time", "2018-08-04 12:13:12");
-		// ³õÊ¼»¯ÅúÁ¿Ö´ĞĞ¶ÔÏó
-		BulkRequestBuilder brb = this.client.prepareBulk();
-		// ³õÊ¼»¯µ¥¸öË÷ÒıÊı¾İµÄbuilder¶ÔÏó
-		IndexRequestBuilder irb = this.client.prepareIndex(indexName, typeName).setSource(kvMap);
-		// ½«µ¥¸ö¶ÔÏó¼ÓÈëÅúÁ¿Ö´ĞĞ¶ÔÈı´Î£¬Ïàµ±ÓÚÍ¬Ê±Ë÷Òı3ÌõÊı¾İ
+		client.prepareUpdate(indexName, typeName, docID).setDoc(kvMap)
+				.execute().actionGet();
+	}
+
+	// æ‰¹é‡æ’å…¥
+	public boolean addBatchDocument(String indexName, String typeName) {
+		Map<String, String> kvMap = new HashMap<String, String>();
+		kvMap.put("title", "è‡ªå®šä¹‰æ–°é—»æ ‡é¢˜");
+		kvMap.put("source_url", "è‡ªå®šä¹‰æ–°é—»url");
+		kvMap.put("port_time", "2018-08-04 12:12:12");
+		kvMap.put("insert_time", "2018-08-04 12:13:12");
+		BulkRequestBuilder brb = client.prepareBulk();
+		IndexRequestBuilder irb = client.prepareIndex(indexName, typeName)
+				.setSource(kvMap);
 		brb.add(irb);
 		brb.add(irb);
-		brb.add(irb);
-		// ÕıÊ½·¢ÆğÅúÁ¿Ë÷ÒıµÄÇëÇó
 		BulkResponse bulkResponse = brb.execute().actionGet();
-		// ·µ»ØÊÇ·ñÓĞË÷ÒıÊ§°ÜµÄÏûÏ¢
 		return bulkResponse.hasFailures();
 	}
 
-	/**
-	 * ¸ù¾İdocID²éÑ¯¶ÔÓ¦µÄÎÄµµĞÅÏ¢
-	 *
-	 * @param indexName
-	 * @param typeName
-	 * @param docID
-	 */
-	public void selectOneDocumentByID(String indexName, String typeName, String docID) {
-		// ½«Êı¾İ·¢ËÍµ½·şÎñÆ÷¶Ë
-		SearchResponse response = this.client.prepareSearch(indexName).setTypes(typeName)
-				.setQuery(QueryBuilders.termQuery("_id", docID)).execute().actionGet();
+	// æŸ¥è¯¢æ•°æ®
+	public void selectOneDocumentByID(String indexName, String typeName,
+			String docID) {
+		SearchResponse response = client.prepareSearch(indexName)
+				.setTypes(typeName)
+				.setQuery(QueryBuilders.termQuery("_id", docID)).execute()
+				.actionGet();
 		System.out.println(response.toString());
 	}
 
-	/**
-	 * ¸ù¾İqueryĞÅÏ¢£¬ËÑË÷³öÃüÖĞÌõ¼şµÄ½á¹ûÎÄµµ¼¯ºÏ
-	 *
-	 * @param indexName
-	 * @param typeName
-	 */
-	public void searchDocumentByQuery(String indexName, String typeName) {
-		// ½«Êı¾İ·¢ËÍµ½·şÎñÆ÷¶Ë
-		SearchResponse response = this.client.prepareSearch(indexName).setTypes(typeName)
-				.setQuery(QueryBuilders.termQuery("title", "±êÌâ")).execute().actionGet();
+	// é€šè¿‡æ¡ä»¶æœç´¢
+	public void searchDocumentByQuery(String indexName, String typeName,
+			String field, String condition) {
+		SearchResponse response = client.prepareSearch(indexName)
+				.setTypes(typeName)
+				.setQuery(QueryBuilders.termQuery(field, condition)).execute()
+				.actionGet();
+		SearchHits hits = response.getHits();
+		for (SearchHit searchHit : hits) {
+			Map<String, Object> source = searchHit.getSourceAsMap();
+			System.out.println(source);
+		}
+	}
+
+	// é€šè¿‡æ¡ä»¶æœç´¢æ˜¯å¦å­˜åœ¨å­—æ®µ
+	public void searchMissingByQuery(String indexName, String typeName,
+			String field, String fields) {
+		ExistsQueryBuilder existsQueryBuilder = QueryBuilders
+				.existsQuery(fields);
+		BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().mustNot(
+				existsQueryBuilder);
+		SearchResponse response = client.prepareSearch(indexName)
+				.setTypes(typeName).setQuery(boolQueryBuilder).execute()
+				.actionGet();
+		SearchHits hits = response.getHits();
+		for (SearchHit searchHit : hits) {
+			Map<String, Object> source = searchHit.getSourceAsMap();
+			System.out.println(source);
+		}
+	}
+
+	// åˆ é™¤
+	public void deleteDocumentByID(String indexName, String typeName,
+			String docID) {
+		client.prepareDelete(indexName, typeName, docID).execute().actionGet();
+	}
+
+	// èšåˆ
+	public void searchMaxPostTimeItem(String indexName, String typeName,
+			String searchWord) {
+		TermQueryBuilder termQueryBuilder = QueryBuilders.termQuery("title",
+				searchWord);
+		SearchResponse response = client
+				.prepareSearch(indexName)
+				.setTypes(typeName)
+				.setQuery(termQueryBuilder)
+				.addSort("post_time", SortOrder.DESC)
+				.setFrom(0)
+				.setSize(20)
+				.addAggregation(
+						AggregationBuilders.max("max_post_time").field(
+								"post_time"))
+				.addAggregation(
+						AggregationBuilders.min("min_post_time").field(
+								"post_time")).execute().actionGet();
 		SearchHits hits = response.getHits();
 		for (SearchHit searchHit : hits) {
 			Map source = searchHit.getSourceAsMap();
 			System.out.println(source);
 		}
+		Aggregations aggregations = response.getAggregations();
+		System.out.println(aggregations.getAsMap());
 	}
 
-	/**
-	 * É¾³ıÖ¸¶¨idÖµµÄÎÄµµ
-	 *
-	 * @param indexName
-	 * @param typeName
-	 */
-	public void removeOneDocument(String indexName, String typeName, String docID) {
-		// ½«Êı¾İ·¢ËÍµ½·şÎñÆ÷¶Ë
-		this.client.prepareDelete(indexName, typeName, docID).execute().actionGet();
+	// å¯¹æ‰€çˆ¬æ–°é—»åˆ—è¡¨æ•°æ®ä¸­ï¼Œå¯¹åº”çš„å‘å¸ƒæ—¶é—´åˆ†å¸ƒ
+	public void searchPostTimeDist4History(String indexName, String typeName) {
+		AggregationBuilder aggregation = AggregationBuilders
+				.dateHistogram("agg").field("post_time").format("yyyy-MM-dd")
+				.dateHistogramInterval(DateHistogramInterval.DAY);
+		SearchResponse response = client.prepareSearch(indexName)
+				.setTypes(typeName).setQuery(QueryBuilders.matchAllQuery())
+				.addSort("post_time", SortOrder.DESC).setFrom(0).setSize(20)
+				.addAggregation(aggregation).execute().actionGet();
+		SearchHits hits = response.getHits();
+		for (SearchHit searchHit : hits) {
+			Map source = searchHit.getSourceAsMap();
+			System.out.println(source);
+		}
+		Aggregations aggregations = response.getAggregations();
+		for (Aggregation aggregation2 : aggregations) {
+			System.out.println(aggregation2);
+		}
 	}
 
-	/**
-	 * ¸üĞÂÖ¸¶¨idÖµµÄÎÄµµ,Ö»¸üĞÂÓĞÏÔÊ½Ö¸¶¨µÄ×Ö¶Î£¬Î´±»Ö¸¶¨ĞŞ¸ÄµÄÔò²»¸Ä±ä
-	 *
-	 * @param indexName
-	 * @param typeName
-	 */
-	public void updateOneDocument(String indexName, String typeName, String docID) {
-		// Í¨¹ımap¶¨Òåkv½á¹¹Êı¾İ¶ÔÏó
-		Map<String, String> kvMap = new HashMap<String, String>();
-		kvMap.put("title", "ÎÒÊÇ±»updateµÄtitle");
-		kvMap.put("source_url", "×Ô¶¨ÒåĞÂÎÅurl");
-		kvMap.put("post_time", "2018-08-04 12:12:12");
-		kvMap.put("insert_time", "2018-08-04 12:13:12");
-		// ½«Òª¸üĞÂÊı¾İ·¢ËÍµ½·şÎñÆ÷¶Ë
-		this.client.prepareUpdate(indexName, typeName, docID).setDoc(kvMap).execute().actionGet();
+	private static String insertName_1 = "jd_joods_index";
+	private static String typeName_1 = "jd_joods_type";
+	private static String insertName_2 = "jd_comments_index";
+	private static String typeName_2 = "jd_comments_type";
+
+	public static void main(String[] args) throws IOException {
+		TransportClientUtil t = new TransportClientUtil();
+		t.createIndex(insertName_1);
+		t.createIndex(insertName_1);
+		// t.deleteIndex("index_from_tc");
+		// t.createType4JDComments(insertName_1, typeName_1);
+		// t.addOneDocument(indexName, typeName);
+		// t.selectOneDocumentByID(indexName, typeName, "x6UpgGkBQPyEqDQuiJrx");
+//		t.searchDocumentByQuery(insertName_2, typeName_2, "productColor", "æå¤œé»‘");
+		System.out.println("done");
 	}
 
-	public static void main(String[] args) throws InterruptedException, ExecutionException, IOException {
-		// ³õÊ¼»¯client¹¤¾ßÀà
-		TransportClientUtil transportClient = new TransportClientUtil();
-		// ´´½¨Ë÷Òı
-		// String indexName = "index_for_tc";
-		// transportClient.createIndex(indexName);
-		System.out.println(transportClient.client);
-		// String typeName = "type_from_tc";
-		// transportClient.createType(indexName, typeName);
-		// transportClient.addBatchDocument(indexName, typeName);
-		// String docID = "28C_1GcByGetHIn1Vdd0";
-		// transportClient.selectOneDocumentByID(indexName, typeName, docID);
-		// transportClient.searchDocumentByQuery(indexName, typeName);
-		System.out.println("done!");
-	}
 }

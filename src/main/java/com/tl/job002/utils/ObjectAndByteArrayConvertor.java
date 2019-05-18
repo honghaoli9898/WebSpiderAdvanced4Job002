@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-
 /**
  * java对象与字节数组转换工具
  * 
@@ -14,7 +13,8 @@ import java.io.ObjectOutputStream;
  * @date 2018年11月13日
  */
 public class ObjectAndByteArrayConvertor {
-	public static byte[] convertObjectToByteArray(Object obj) throws IOException {
+	public static byte[] convertObjectToByteArray(Object obj)
+			throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
 		oos.writeObject(obj);
@@ -23,10 +23,14 @@ public class ObjectAndByteArrayConvertor {
 		return objByArray;
 	}
 
-	public static Object convertByteArrayToObj(byte[] objByArray) throws IOException, ClassNotFoundException {
-		ByteArrayInputStream bais = new ByteArrayInputStream(objByArray);
-		ObjectInputStream osi = new ObjectInputStream(bais);
-		Object obj = osi.readObject();
-		return obj;
+	public static Object convertByteArrayToObj(byte[] objByArray)
+			throws IOException, ClassNotFoundException {
+		if (objByArray != null) {
+			ByteArrayInputStream bais = new ByteArrayInputStream(objByArray);
+			ObjectInputStream osi = new ObjectInputStream(bais);
+			Object obj = osi.readObject();
+			return obj;
+		}
+		return null;
 	}
 }

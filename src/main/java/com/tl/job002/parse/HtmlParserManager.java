@@ -28,6 +28,7 @@ public class HtmlParserManager {
 			String htmlSource, UrlTaskPojo taskPojo) throws ClassNotFoundException, IOException {
 		List<JDGoodsCommentsEntriy> jdGoodsCommentsEntriyList = null;
 		htmlSource = JsoupUtil.getElementsBySelector(htmlSource, "body").text();
+		htmlSource = htmlSource.replace("￣▽￣\"\"", "￣▽￣&amp;quot;&amp;quot");
 		jdGoodsCommentsEntriyList = parserInterface.parserHtmlSource(
 				htmlSource, TaskScheduleManager.getJDGoodsEntriy(taskPojo.getTitle()));
 		logger.info("商品skuID"+taskPojo.getTitle()+"评论信息解析成功");

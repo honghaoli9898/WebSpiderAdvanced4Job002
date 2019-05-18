@@ -5,7 +5,7 @@
 	<artifactId>WebSpiderAdvanced4Job002</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<!-- 配置maven多环境属性,方便灵活打包 -->
-	<!-- <profiles> <profile> <id>master</id> <properties> <env>master</env> 
+	<!--<profiles> <profile> <id>master</id> <properties> <env>master</env> 
 		<ant-properties-path>src/main/resources/conf/master/jdbc.properties</ant-properties-path> 
 		<ant-properties-path-2>src/main/resources/conf/master/spider.properties</ant-properties-path-2> 
 		<ant-properties-path-3>src/main/resources/conf/master/log4j.properties</ant-properties-path-3> 
@@ -24,7 +24,14 @@
 		</repository>
 	</repositories>
 	<dependencies>
-	<!-- +++|selenium|+++ -->
+		<!-- https://mvnrepository.com/artifact/org.json/json -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160810</version>
+		</dependency>
+
+		<!-- +++|selenium|+++ -->
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>

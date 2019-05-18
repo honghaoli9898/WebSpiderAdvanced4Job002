@@ -232,6 +232,16 @@ public class TaskScheduleManager {
 		}
 	}
 
+	// 删除待补全的商品
+	public static void deleteOneDiscomplementGoodsEntriy(String skuID)
+			throws UnsupportedEncodingException {
+		synchronized (redisOperUtil) {
+			redisOperUtil.getJedis().hdel(
+					todoJDGoodsEntriyMapKey.getBytes("utf-8"),
+					skuID.getBytes("utf-8"));
+		}
+	}
+
 	// 带完善的goods集合长度
 	public static long getToDoJDGoodsSize() throws UnsupportedEncodingException {
 		synchronized (redisOperUtil) {
@@ -310,7 +320,7 @@ public class TaskScheduleManager {
 			throws IOException, ClassNotFoundException {
 		JDGoodsCommentsEntriy jdGoodsComment = null;
 		synchronized (redisOperUtil) {
-			byte[] byteArray = redisOperUtil.getJedis().spop(
+			byte[] byteArray = redisOperUtil.getJedis().lpop(
 					todoJDCommentListKey.getBytes("utf-8"));
 			jdGoodsComment = (JDGoodsCommentsEntriy) ObjectAndByteArrayConvertor
 					.convertByteArrayToObj(byteArray);
@@ -334,6 +344,11 @@ public class TaskScheduleManager {
 	// 添加一个账号到userNameList
 	public static synchronized void addUserNameList(String userName) {
 		userNameList.add(userName);
+	}
+
+	// 得到userNameList最后一个值
+	public static String getLastListForUserNameList() {
+		return userNameList.get(userNameList.size() - 1);
 	}
 
 	// 得到userNameList大小

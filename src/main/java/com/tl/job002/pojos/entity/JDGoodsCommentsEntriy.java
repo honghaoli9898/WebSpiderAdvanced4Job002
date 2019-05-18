@@ -6,7 +6,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class JDGoodsCommentsEntriy implements Serializable{
+import com.tl.job002.utils.StaticValue;
+
+public class JDGoodsCommentsEntriy implements Serializable {
 	private static final long serialVersionUID = 1L;
 	// 商品来源sku
 	private String commentSourceSku;
@@ -40,6 +42,16 @@ public class JDGoodsCommentsEntriy implements Serializable{
 	private String afterDays;
 	// 下载时间
 	private Date insertDate;
+	// 商品url
+	private String itemUrl;
+
+	public String getItemUrl() {
+		return itemUrl;
+	}
+
+	public void setItemUrl(String itemUrl) {
+		this.itemUrl = StaticValue.itemUrl + itemUrl + ".html";
+	}
 
 	public Date getInsertDate() {
 		return insertDate;
@@ -101,7 +113,7 @@ public class JDGoodsCommentsEntriy implements Serializable{
 					jdGoodsCommentsEntriy.setReferenceId(map.get(attribute));
 					break;
 				case 6:
-					jdGoodsCommentsEntriy.setScore(attribute);
+					jdGoodsCommentsEntriy.setScore(map.get(attribute));
 				case 7:
 					jdGoodsCommentsEntriy.setContent(map.get(attribute));
 					break;
@@ -252,7 +264,7 @@ public class JDGoodsCommentsEntriy implements Serializable{
 				+ ", productSize=" + productSize + ", referenceTime="
 				+ referenceTime + ", creationTime=" + creationTime + ", days="
 				+ days + ", afterDays=" + afterDays + ", insertDate="
-				+ insertDate + "]";
+				+ insertDate + ", itemUrl=" + itemUrl + "]";
 	}
 
 }

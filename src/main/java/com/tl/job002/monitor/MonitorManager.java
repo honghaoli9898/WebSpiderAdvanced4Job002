@@ -86,7 +86,6 @@ public class MonitorManager {
 					e.printStackTrace();
 				}
 				StringBuilder stringBuilder = new StringBuilder();
-				stringBuilder.append("\n");
 				stringBuilder.append("一共存储了" + totalJDGoodsEntityNumber + "个商品信息");
 				stringBuilder.append("\n");
 				stringBuilder.append("今天一共存储了" + totalCurrentDayEntityNumber + "个商品信息");

@@ -14,8 +14,10 @@ import com.tl.job002.utils.TransportClientUtil;
 
 public class DataPersist4EsImpl implements DataPersistrnceInterface {
 	private static TransportClientUtil transportClientUtil;
-	private static String insertName = "index_from_tc";
-	private static String typeName = "type_from_tc";
+	private static String insertName_1 = "jd_joods_index";
+	private static String typeName_1 = "jd_joods_type";
+	private static String insertName_2 = "jd_comments_index";
+	private static String typeName_2 = "jd_comments_type";
 
 	public DataPersist4EsImpl() {
 		try {
@@ -34,6 +36,7 @@ public class DataPersist4EsImpl implements DataPersistrnceInterface {
 	public boolean persist(JDGoodsCommentsEntriy jdGoodsComment) {
 		try {
 			Map<String, String> kvMap = new HashMap<String, String>();
+			kvMap.put("commentSourceSku", jdGoodsComment.getCommentSourceSku());
 			kvMap.put("username", jdGoodsComment.getNickName());
 			kvMap.put("user_level_name", jdGoodsComment.getUserLevelName());
 			kvMap.put("user_level_id", jdGoodsComment.getUserLevelId());
@@ -48,9 +51,10 @@ public class DataPersist4EsImpl implements DataPersistrnceInterface {
 			kvMap.put("creation_time", jdGoodsComment.getCreationTime());
 			kvMap.put("days", jdGoodsComment.getDays());
 			kvMap.put("after_days", jdGoodsComment.getAfterDays());
+			kvMap.put("itemUrl", jdGoodsComment.getItemUrl());
 			kvMap.put("insert_data",
 					DateUtil.formatDateToString(jdGoodsComment.getInsertDate()));
-			transportClientUtil.addOneDocument(insertName, typeName, kvMap);
+			transportClientUtil.addOneDocument(insertName_2, typeName_2, kvMap);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -86,7 +90,7 @@ public class DataPersist4EsImpl implements DataPersistrnceInterface {
 			kvMap.put("comment_type_array", jdGoods.getCommentTypeArrayStr());
 			kvMap.put("insert_data",
 					DateUtil.formatDateToString(jdGoods.getInsertDate()));
-			transportClientUtil.addOneDocument(insertName, typeName, kvMap);
+			transportClientUtil.addOneDocument(insertName_1, typeName_1, kvMap);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
